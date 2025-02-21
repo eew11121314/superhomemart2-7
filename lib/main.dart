@@ -1,53 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:superhomemart2/page1/Page1.dart';
-import 'package:superhomemart2/page2/Page2.dart';
-import 'package:superhomemart2/page3/Page3.dart';
+import 'package:superhomemart2/Pageguest/page1/Page1.dart';
+import 'package:superhomemart2/Pageguest/page2/Page2.dart';
+import 'package:superhomemart2/Pageguest/page3/Page3.dart';
+import 'package:superhomemart2/Pagemain/page1_main/Page1_m.dart';
+import 'package:superhomemart2/Pagemain/page2_main/Page2_m.dart';
+import 'package:superhomemart2/Pagemain/page3_main/Page3_m.dart';
 import 'package:superhomemart2/Login.dart';
-import 'package:superhomemart2/page4/login_p4.dart';
-import 'package:superhomemart2/page1/delivery.dart';
-//import 'package:superhomemart2/page4/editprofile.dart';
+import 'package:superhomemart2/Pageguest/page4/login_hide.dart';
+import 'package:superhomemart2/Pageguest/page1/delivery.dart';
+import 'package:provider/provider.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
 import 'package:window_manager/window_manager.dart';
+import 'dart:io';
+import 'package:superhomemart2/Pageguest/widgets_page1/page1_bar.dart'; // นำเข้า CustomBottomNavigationBar
+import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // นำเข้า Page1BottomNavigationBar
+import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
 
-  await windowManager.setSize(const Size(428, 926));
-  await windowManager.setMinimumSize(const Size(428, 926));
-  await windowManager.setMaximumSize(const Size(428, 926));
+  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    await windowManager.ensureInitialized();
+    await windowManager.setSize(const Size(428, 926));
+    await windowManager.setMinimumSize(const Size(428, 926));
+    await windowManager.setMaximumSize(const Size(428, 926));
+    await windowManager.setResizable(false);
+  }
 
-  await windowManager.setResizable(false);
-
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
-      routes: {
-        '/login': (context) => const LoginPage(),
-        '/delivery': (context) => const DeliveryPage(
-              productName: '',
+    return FutureBuilder<bool>(
+      future: _checkLoginStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else {
+          final bool isLoggedIn = snapshot.data ?? false;
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              fontFamily: 'Kanit', // กำหนดฟอนต์เริ่มต้นที่นี่
             ),
+            home: isLoggedIn ? const HomeScreenMain() : const HomeScreenGuest(),
+            routes: {
+              '/login': (context) => const LoginPage(),
+              '/delivery': (context) => const DeliveryPage(
+                    productName: '',
+                  ),
+            },
+          );
+        }
       },
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreenGuest extends StatefulWidget {
+  const HomeScreenGuest({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  HomeScreenGuestState createState() => HomeScreenGuestState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class HomeScreenGuestState extends State<HomeScreenGuest> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -67,36 +100,43 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.shifting,
+      bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        items: [
-          BottomNavigationBarItem(
-            icon:
-                SvgPicture.asset('assets/Icon/home.svg', width: 24, height: 24),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon:
-                SvgPicture.asset('assets/Icon/menu.svg', width: 24, height: 24),
-            label: 'Menu',
-          ),
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset('assets/Icon/settings.svg',
-                width: 24, height: 24),
-            label: 'Settings',
-          ),
-          BottomNavigationBarItem(
-            icon:
-                SvgPicture.asset('assets/Icon/user.svg', width: 24, height: 24),
-            label: 'Profile',
-          ),
-        ],
-        selectedLabelStyle: const TextStyle(fontFamily: 'Kanit'),
-        unselectedLabelStyle: const TextStyle(fontFamily: 'Kanit'),
+      ),
+    );
+  }
+}
+
+class HomeScreenMain extends StatefulWidget {
+  const HomeScreenMain({super.key});
+
+  @override
+  HomeScreenMainState createState() => HomeScreenMainState();
+}
+
+class HomeScreenMainState extends State<HomeScreenMain> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages_m = [
+    const Page1M(),
+    const Page2M(),
+    const Page3M(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages_m[_currentIndex],
+      bottomNavigationBar: Custom_MBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

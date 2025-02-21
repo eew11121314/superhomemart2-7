@@ -7,16 +7,16 @@ import 'package:superhomemart2/ForgetPassword.dart';
 import 'package:superhomemart2/register.dart';
 import 'package:superhomemart2/Pagemain/page1_main/page1_m.dart'; // Update the import
 import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
-import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart'; // เพิ่มการนำเข้า
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginP4 extends StatefulWidget {
+  const LoginP4({super.key});
 
   @override
-  LoginPageState createState() => LoginPageState();
+  LoginP4State createState() => LoginP4State();
 }
 
-class LoginPageState extends State<LoginPage> {
+class LoginP4State extends State<LoginP4> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false; // สถานะการแสดงรหัสผ่าน
@@ -48,13 +48,6 @@ class LoginPageState extends State<LoginPage> {
     } catch (e) {
       debugPrint("Exception: $e");
     }
-  }
-
-  Future<void> logOut() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('username'); // ลบชื่อผู้ใช้
-    await prefs.setBool(
-        'isLoggedIn', false); // เปลี่ยนสถานะการเข้าสู่ระบบเป็น false
   }
 
   @override
@@ -102,6 +95,12 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
+  // ฟังก์ชันบันทึกข้อมูล username ลงใน SharedPreferences
+  Future<void> saveUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+  }
+
   // ฟังก์ชันเปรียบเทียบข้อมูลผู้ใช้จาก API กับข้อมูลที่กรอก
   void _loginUser() async {
     String username = _usernameController.text;
@@ -112,15 +111,12 @@ class LoginPageState extends State<LoginPage> {
     } else {
       bool userFound = false;
       for (var user in users) {
+        // เปรียบเทียบรหัสผ่านที่กรอกกับแฮช bcrypt ที่ได้จาก API
         if (user['username'] == username &&
             BCrypt.checkpw(password, user['password'])) {
           userFound = true;
-
-          // บันทึกข้อมูลการเข้าสู่ระบบใน SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('username', username); // เก็บชื่อผู้ใช้
-          await prefs.setBool('isLoggedIn', true); // เก็บสถานะการเข้าสู่ระบบ
-
+          await saveUsername(
+              username); // บันทึก username ลงใน SharedPreferences
           break;
         }
       }
@@ -129,7 +125,7 @@ class LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => const Page1M()), // ไปยังหน้า Page1M
+              builder: (context) => const Page1M()), // Update the navigation
         );
       } else {
         _showAlert(context, 'ใส่ username หรือ password ไม่ถูกต้อง');
@@ -156,25 +152,11 @@ class LoginPageState extends State<LoginPage> {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                  color:
-                      Colors.black.withAlpha(25)), // 0.1 * 255 = 25.5 ประมาณ 25
+              child: Container(color: Colors.black.withAlpha(25)),
             ),
           ),
           // ปุ่มย้อนกลับ
-          Positioned(
-            top: 10,
-            left: 10,
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/Icon/left.svg',
-                color: Colors.white,
-              ), // ใช้ SVG แทนไอคอน
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
+
           // เนื้อหาหลัก
           Center(
             child: SingleChildScrollView(
@@ -339,25 +321,30 @@ class LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterPage(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'สมัครสมาชิก',
+                          style: TextStyle(
+                            color: Color(0xFFCFEE80),
+                            fontFamily: 'Kanit',
+                            fontSize: 20, // เพิ่มขนาดฟอนต์
+                            fontWeight: FontWeight
+                                .bold, // ทำให้ตัวหนังสือหนาขึ้น (เพิ่มหรือไม่ก็ได้)
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text(
-                      'สมัครสมาชิก',
-                      style: TextStyle(
-                        color: Color(0xFFCFEE80),
-                        fontFamily: 'Kanit',
-                        fontSize: 20, // เพิ่มขนาดฟอนต์
-                        fontWeight: FontWeight
-                            .bold, // ทำให้ตัวหนังสือหนาขึ้น (เพิ่มหรือไม่ก็ได้)
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),

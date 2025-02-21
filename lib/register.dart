@@ -1,3 +1,5 @@
+//เกิดปัญหาไม่สามารถสมัครได้ ต้องแก้ไขโค้ดในไฟล์นี้
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -201,7 +203,7 @@ class RegisterPageState extends State<RegisterPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Register',
+                    'สมัครสมาชิก',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -450,7 +452,7 @@ class RegisterPageState extends State<RegisterPage> {
                     ),
                     onPressed: _registerUser,
                     child: const Text(
-                      'Register',
+                      'สมัครสมาชิก',
                       style: TextStyle(
                           fontFamily: 'Kanit',
                           fontSize: 20,
