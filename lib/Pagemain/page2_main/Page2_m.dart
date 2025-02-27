@@ -3,9 +3,7 @@ import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/jadever.da
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart';
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/decakila.dart';
-import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // นำเข้า Page1BottomNavigationBar
-import 'package:superhomemart2/Pagemain/page1_main/page1_m.dart'; // นำเข้า Page1M
-import 'package:superhomemart2/Pagemain/page3_main/page3_m.dart'; // นำเข้า Page3M
+// นำเข้า Page1BottomNavigationBar
 
 class Page2M extends StatefulWidget {
   const Page2M({super.key});
@@ -15,24 +13,6 @@ class Page2M extends StatefulWidget {
 }
 
 class _Page2MState extends State<Page2M> {
-  int _currentIndex = 1; // ตั้งค่าเริ่มต้นให้เป็นหน้า Menu
-
-  final List<Widget> _pages_m = [
-    const Page1M(), // หน้า Home
-    const Page2M(), // หน้า Menu
-    const Page3M(), // หน้า Settings
-  ];
-
-  void _onItemTapped(int index) {
-    if (index != 1) {
-      // ถ้าไม่ใช่หน้า Menu ให้เปลี่ยนหน้า
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => _pages_m[index]),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,10 +85,6 @@ class _Page2MState extends State<Page2M> {
             },
           ),
         ],
-      ),
-      bottomNavigationBar: Custom_MBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

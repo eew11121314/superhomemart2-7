@@ -41,7 +41,7 @@ class DraggableCartIcon extends StatelessWidget {
             Container(
               width: 40, // ขนาดไอคอน
               height: 40,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Center(
                 child: SvgPicture.asset(
                   'assets/Icon/cart.svg', // ไฟล์ SVG ของไอคอนรถเข็น

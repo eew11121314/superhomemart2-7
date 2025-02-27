@@ -1,5 +1,4 @@
 import 'dart:async'; //ไอคอนตะกร้า
-//import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'productdetails1_m.dart';
@@ -10,15 +9,11 @@ import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/jadever.da
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart';
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-//import 'package:superhomemart2/Pagemain/page1_main/profile_m.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:superhomemart2/Pagemain/icons/icon_cart.dart';
 import 'package:superhomemart2/Pagemain/icons/icon_menu.dart';
 import 'package:superhomemart2/Pagemain/icons/icon_ProfileButton.dart';
-import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // นำเข้า Page1BottomNavigationBar
-import 'package:superhomemart2/Pagemain/page2_main/page2_m.dart'; // นำเข้า Page2M
-import 'package:superhomemart2/Pagemain/page3_main/page3_m.dart'; // นำเข้า Page3M
-//import 'package:superhomemart2/main.dart';
+// นำเข้า Page1BottomNavigationBar
 
 class Page1M extends StatefulWidget {
   const Page1M({super.key});
@@ -569,26 +564,6 @@ class Page1MState extends State<Page1M> {
           //HomeScreen()
         ],
       ),
-      bottomNavigationBar: Custom_MBottomNavigationBar(
-        currentIndex: 0, // กำหนดค่า currentIndex ที่เหมาะสม
-        onTap: (index) {
-          // กำหนดการทำงานเมื่อมีการแตะที่ไอคอนใน BottomNavigationBar
-          setState(() {
-            // อัปเดต currentIndex ตาม index ที่ได้รับ
-            if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Page2M()),
-              );
-            } else if (index == 2) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Page3M()),
-              );
-            }
-          });
-        },
-      ), // เพิ่ม BottomNavigationBar
     );
   }
 }
