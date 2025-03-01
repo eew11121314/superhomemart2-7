@@ -28,6 +28,8 @@ dependencies:
   provider: ^6.1.2
   mime: ^1.0.0
   http_parser: ^4.0.0
+  qr_flutter: ^4.0.0
+  logger: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -111,9 +113,17 @@ flutter:
     - assets/Icon/plus.svg
     - assets/Icon/minus.svg
     - assets/Icon/arrow-bottom.svg
+    - assets/Icon/arrow_down.svg
 
     - assets/Icon/email.svg
     - assets/Icon/one.svg
     - assets/Icon/check.svg
     - assets/Icon/bin.svg
     - assets/Icon/edit.svg
+    - assets/district/1.json
+    - assets/district/2.json
+    - assets/district/3.json
+    - assets/district/thai_geographies.json
+   
+
+    - assets/QRCODE_test.png

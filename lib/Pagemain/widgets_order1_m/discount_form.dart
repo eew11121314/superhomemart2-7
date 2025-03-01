@@ -1,3 +1,5 @@
+//หน้าส่วนลดสินค้า
+/*
 import 'package:flutter/material.dart';
 
 class DiscountForm extends StatelessWidget {
@@ -68,3 +70,4 @@ class DiscountForm extends StatelessWidget {
     );
   }
 }
+*/

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart'; // นำเข้า package สำหรับใช้ TextInputFormatter
 import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
+import 'package:superhomemart2/Pageguest/page4/login_hide.dart'; // นำเข้า LoginP4
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -124,7 +125,7 @@ class RegisterPageState extends State<RegisterPage> {
     // ส่งข้อมูลไปยัง API
     try {
       var url = Uri.parse(
-          'http://superhomemart.duckdns.org:80/api/upload/user/member/app');
+          'https://superhomemart.duckdns.org/api/upload/user/member/app');
       var response = await http.post(url, body: {
         'fname': firstName,
         'lname': lastName,
@@ -141,8 +142,10 @@ class RegisterPageState extends State<RegisterPage> {
         if (mounted) {
           if (data['message'] != null && data['message'] != '') {
             _showAlert(context, 'Registration successful: ${data['message']}');
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/login', (route) => false);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginP4()),
+            );
           }
         } else {
           if (mounted) {

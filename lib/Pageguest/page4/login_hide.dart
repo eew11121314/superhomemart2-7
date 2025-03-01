@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:superhomemart2/ForgetPassword.dart';
-import 'package:superhomemart2/register.dart';
-import 'package:superhomemart2/Pagemain/page1_main/page1_m.dart'; // Update the import
+import 'package:superhomemart2/login&register/ForgetPassword.dart';
+import 'package:superhomemart2/login&register/register.dart';
+import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // Update the import
 import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
 import 'package:shared_preferences/shared_preferences.dart'; // เพิ่มการนำเข้า
 
@@ -24,8 +24,7 @@ class LoginP4State extends State<LoginP4> {
 
   // ฟังก์ชันดึงข้อมูลผู้ใช้จาก API
   Future<void> fetchUsers() async {
-    const String url =
-        "http://superhomemart.duckdns.org:80/api/user/member/app";
+    const String url = "https://superhomemart.duckdns.org/api/user/member/app";
     const String apiKey = "WHt)m6gpqxkF1r(oDczv8mq%";
 
     try {
@@ -117,6 +116,10 @@ class LoginP4State extends State<LoginP4> {
           userFound = true;
           await saveUsername(
               username); // บันทึก username ลงใน SharedPreferences
+
+          // แสดงชื่อผู้ใช้บน terminal
+          debugPrint("Logged in as: $username");
+
           break;
         }
       }
@@ -125,7 +128,8 @@ class LoginP4State extends State<LoginP4> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => const Page1M()), // Update the navigation
+              builder: (context) =>
+                  const Custom_MBottomNavigationBar()), // Update the navigation
         );
       } else {
         _showAlert(context, 'ใส่ username หรือ password ไม่ถูกต้อง');

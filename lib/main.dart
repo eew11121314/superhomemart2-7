@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:superhomemart2/Pageguest/page1/Page1.dart';
 import 'package:superhomemart2/Pageguest/page2/Page2.dart';
 import 'package:superhomemart2/Pageguest/page3/Page3.dart';
-import 'package:superhomemart2/Login.dart';
+import 'package:superhomemart2/login&register/login.dart'; // ตรวจสอบการนำเข้า LoginPage
 import 'package:superhomemart2/Pageguest/page4/login_hide.dart';
 import 'package:superhomemart2/Pageguest/page1/delivery.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +11,7 @@ import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 import 'package:superhomemart2/Pageguest/widgets_page1/page1_bar.dart'; // นำเข้า CustomBottomNavigationBar
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
+//import 'package:superhomemart2/Pageguest/page4/login_button.dart'; //**ไว้ใช้ตอน database มีปัญหา */
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,12 @@ class MyApp extends StatelessWidget {
 
   Future<bool> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isLoggedIn') ?? false;
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final username = prefs.getString('username');
+    if (isLoggedIn && username != null) {
+      print('Current logged in user: $username'); // แสดง log ใน terminal
+    }
+    return isLoggedIn;
   }
 
   @override
@@ -56,8 +62,8 @@ class MyApp extends StatelessWidget {
               fontFamily: 'Kanit', // กำหนดฟอนต์เริ่มต้นที่นี่
             ),
             home: isLoggedIn
-                ? const Page1() // ใช้ Page1 เป็น class เดียว
-                : const HomeScreenGuest(), // เริ่มที่ Page1 เสมอ
+                ? const HomeScreenGuest() // ใช้ HomeScreenGuest เป็น class เดียว
+                : const HomeScreenGuest(), // เริ่มที่ HomeScreenGuest เสมอ
             routes: {
               '/login': (context) => const LoginPage(),
               '/delivery': (context) => const DeliveryPage(
@@ -87,6 +93,13 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
     const Page3(),
     const LoginP4(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // กำหนดสถานะเริ่มต้นที่นี่
+    _currentIndex = 0;
+  }
 
   void _onItemTapped(int index) {
     setState(() {

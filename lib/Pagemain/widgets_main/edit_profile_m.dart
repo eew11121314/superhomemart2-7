@@ -28,6 +28,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _controller = TextEditingController(text: widget.value);
   }
 
+  Future<void> _updateDatabase(String field, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+
+    if (username == null) {
+      debugPrint('No username found');
+      return;
+    }
+
+    final String url =
+        "https://superhomemart.duckdns.org/api/upload/user/member/app";
+    const String apiKey = "WHt)m6gpqxkF1r(oDczv8mq%";
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: jsonEncode({
+          'username': username,
+          field: value,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['status'] == 'success') {
+          debugPrint('Database updated successfully');
+        } else {
+          debugPrint('Failed to update database: ${jsonData['message']}');
+        }
+      } else {
+        debugPrint('Failed to update database: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error updating database: $e');
+    }
+  }
+
   Future<void> _saveChanges() async {
     setState(() {
       _isLoading = true;
@@ -43,43 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    final String url =
-        "http://superhomemart.duckdns.org/api/user/member/app/user/update";
-    const String apiKey = "WHt)m6gpqxkF1r(oDczv8mq%";
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-        },
-        body: jsonEncode({
-          'username': username,
-          widget.field: _controller.text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        if (jsonData['status'] == 'success') {
-          Navigator.pop(context, true); // ส่งค่ากลับไปยังหน้าก่อนหน้า
-        } else {
-          // แสดงข้อความผิดพลาด
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update ${widget.field}')),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update ${widget.field}')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
+    await _updateDatabase(widget.field, _controller.text);
 
     setState(() {
       _isLoading = false;

@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final String url =
-        "http://superhomemart.duckdns.org/api/user/member/app/user?username=$username";
+        "https://superhomemart.duckdns.org/api/user/member/app/user?username=$username";
     const String apiKey = "WHt)m6gpqxkF1r(oDczv8mq%";
 
     try {
@@ -102,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ฟังก์ชันสำหรับอัปโหลดไฟล์ไปยังเซิร์ฟเวอร์
   Future<void> _uploadImage(File imageFile) async {
     final uri = Uri.parse(
-        'http://192.168.1.15:7007/upload'); // เปลี่ยน URL เป็นที่อยู่ IP ของเซิร์ฟเวอร์และพอร์ตใหม่
+        'https://superhomemart.duckdns.org/api/user/member/app/upload'); // เปลี่ยน URL เป็นที่อยู่ IP ของเซิร์ฟเวอร์และพอร์ตใหม่
     final mimeType = lookupMimeType(imageFile.path);
 
     final request = http.MultipartRequest('POST', uri)
@@ -118,6 +118,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       debugPrint('File uploaded successfully');
     } else {
       debugPrint('File upload failed with status: ${response.statusCode}');
+    }
+  }
+
+  // ฟังก์ชันสำหรับลบไฟล์จากเซิร์ฟเวอร์
+  Future<void> _deleteImage() async {
+    final uri = Uri.parse(
+        'https://superhomemart.duckdns.org/api/user/member/app/delete'); // เปลี่ยน URL เป็นที่อยู่ IP ของเซิร์ฟเวอร์และพอร์ตใหม่
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'WHt)m6gpqxkF1r(oDczv8mq%',
+      },
+      body: json.encode({'username': username}),
+    );
+
+    if (response.statusCode == 200) {
+      debugPrint('File deleted successfully');
+      setState(() {
+        _image = null;
+      });
+    } else {
+      debugPrint('File delete failed with status: ${response.statusCode}');
     }
   }
 
@@ -196,8 +220,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               backgroundImage: _image != null
                                   ? FileImage(File(
                                       _image!.path)) // แสดงภาพจาก local storage
-                                  : userData!['image'] != null
-                                      ? NetworkImage(userData!['image'])
+                                  : userData!['image_path'] != null
+                                      ? NetworkImage(userData!['image_path'])
                                       : const AssetImage(
                                               'assets/default_user.png')
                                           as ImageProvider,
@@ -218,6 +242,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                           ),
+                          if (_image != null)
+                            Positioned(
+                              bottom: -0, // ขยับไอคอนลงมาจากวงกลม
+                              left: -5, // ขยับไอคอนไปทางซ้าย
+                              child: GestureDetector(
+                                onTap: _deleteImage, // เมื่อกดที่ไอคอนจะลบภาพ
+                                child: SvgPicture.asset(
+                                  'assets/Icon/delete.svg', // ไฟล์ SVG ที่จะใช้เป็นไอคอน
+                                  width: 30,
+                                  height: 30,
+                                  color: const Color.fromARGB(150, 190, 184,
+                                      184), // กำหนดสีไอคอนให้จางลง
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 10),

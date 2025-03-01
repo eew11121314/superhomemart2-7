@@ -6,12 +6,16 @@ import 'package:provider/provider.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
 
 class OrderButton extends StatelessWidget {
+  final String productId; // เพิ่มฟิลด์ productId
+  // final String productToid; // เพิ่มฟิลด์ productToid
   final String productName;
   final String imageUrl;
   final double price;
 
   const OrderButton({
     Key? key,
+    required this.productId, // เพิ่มฟิลด์ productId
+    // required this.productToid, // เพิ่มฟิลด์ productToid
     required this.productName,
     required this.imageUrl,
     required this.price,
@@ -20,6 +24,8 @@ class OrderButton extends StatelessWidget {
   void _handleOrder(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     cartProvider.addItem(CartItem(
+      productId: productId, // เพิ่มการส่งค่า productId
+      // productToid: productToid, // เพิ่มการส่งค่า productToid
       productName: productName,
       imageUrl: imageUrl,
       quantity: 1,

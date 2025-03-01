@@ -15,6 +15,7 @@ class Page3 extends StatelessWidget {
               fontFamily: 'Kanit'), // Apply Kanit font to AppBar title
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false, // ซ่อนปุ่มย้อนกลับอัตโนมัติ
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

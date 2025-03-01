@@ -33,11 +33,13 @@ class _Custom_MBottomNavigationBarState
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.shifting,
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
+        selectedFontSize: 14, // ขนาดฟอนต์เมื่อเลือก
+        unselectedFontSize: 0, // ขนาดฟอนต์เมื่อไม่ได้เลือก
         items: [
           BottomNavigationBarItem(
             icon: SvgPicture.asset(

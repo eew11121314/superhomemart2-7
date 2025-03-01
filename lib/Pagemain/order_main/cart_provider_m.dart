@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 class CartItem {
+  final String productId; // เพิ่มฟิลด์ productId
+  // final String productToid;
   final String productName;
   final double price;
   final String imageUrl;
   int quantity;
 
   CartItem({
+    required this.productId, // เพิ่มฟิลด์ productId
+    // required this.productToid,
     required this.productName,
     required this.price,
     required this.imageUrl,

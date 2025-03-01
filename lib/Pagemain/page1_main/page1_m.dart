@@ -10,9 +10,9 @@ import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart
 import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:superhomemart2/Pagemain/icons/icon_cart.dart';
-import 'package:superhomemart2/Pagemain/icons/icon_menu.dart';
-import 'package:superhomemart2/Pagemain/icons/icon_ProfileButton.dart';
+import 'package:superhomemart2/Pagemain/page1_main/icons/icon_cart.dart';
+import 'package:superhomemart2/Pagemain/page1_main/icons/icon_menu.dart';
+import 'package:superhomemart2/Pagemain/page1_main/icons/icon_ProfileButton.dart';
 // นำเข้า Page1BottomNavigationBar
 
 class Page1M extends StatefulWidget {
@@ -206,7 +206,9 @@ class Page1MState extends State<Page1M> {
         }
       } else {
         // ถ้าการเชื่อมต่อ API ล้มเหลว
-        print("Failed to connect to the API.");
+        print(
+            "Failed to connect to the API. Status code: ${response.statusCode}");
+        print("Response body: ${response.body}");
       }
     } else {
       // ผู้ใช้ยังไม่ได้ล็อกอิน
@@ -228,6 +230,7 @@ class Page1MState extends State<Page1M> {
         ? (product["price"] as int).toDouble()
         : product["price"] ?? 0.0;
     String sku = product["sku"] ?? "N/A";
+    // String id = product["id"] ?? "N/A";
 
     // เพิ่มข้อมูลที่ต้องการ
     String description = product["description"] ?? "No description available";
@@ -275,6 +278,7 @@ class Page1MState extends State<Page1M> {
           image: image,
           price: price,
           sku: sku,
+          // id: id,
           description: description, // เพิ่มข้อมูล description
           category: category, // เพิ่มข้อมูล category
           stock: stock, // เพิ่มข้อมูล stock

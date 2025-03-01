@@ -8,6 +8,7 @@ import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
 import 'package:superhomemart2/Pagemain//widgets_main/order_button.dart';
 
 class ProductDetailsM extends StatefulWidget {
+  // final String id;
   final String name;
   final String image;
   final double price;
@@ -28,6 +29,7 @@ class ProductDetailsM extends StatefulWidget {
 
   const ProductDetailsM({
     super.key,
+    // required this.id,
     required this.name,
     required this.image,
     required this.price,
@@ -46,7 +48,6 @@ class ProductDetailsM extends StatefulWidget {
     required this.sh_width,
     required this.sh_height,
   });
-
   @override
   _ProductDetailsMState createState() => _ProductDetailsMState();
 }
@@ -628,6 +629,8 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
             ),
             Expanded(
               child: OrderButton(
+                productId: widget.sku,
+                // productToid: widget.id,
                 productName: widget.name,
                 imageUrl: widget.image,
                 price: widget.price,
