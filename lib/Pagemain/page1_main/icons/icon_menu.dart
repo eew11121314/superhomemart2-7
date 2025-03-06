@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:superhomemart2/Pageguest/page2/Page2.dart'; // นำเข้า Page2 ที่คุณต้องการนำทางไป
+import 'package:superhomemart2/Pagemain/page2_main/Page2_m.dart';
 
 class MenuIcon extends StatelessWidget {
   final double bottomOffset; // Allow bottom offset customization
@@ -22,7 +22,7 @@ class MenuIcon extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const Page2(), // ไปหน้า Page2
+              builder: (context) => const Page2M(), // ไปหน้า Page2
             ),
           );
         },

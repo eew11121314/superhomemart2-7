@@ -1,5 +1,5 @@
-//สำหรับเมื่อเชื่อมหลังบ้านไม่ได้เป็นปุ่มลัด
-/*
+//สำหรับเมื่อเชื่อมหลังบ้านไม่ได้เป็นปุ่มลัด เข้าหน้าอื่นๆ
+// /*
 import 'package:flutter/material.dart';
 import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // Update the import
 import 'package:shared_preferences/shared_preferences.dart'; // เพิ่มการนำเข้า
@@ -127,4 +127,4 @@ class LoginButtonPage extends StatelessWidget {
     );
   }
 }
-*/
+// */

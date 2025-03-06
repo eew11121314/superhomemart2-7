@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/jadever.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/decakila.dart';
+import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/jadever_m.dart';
+import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/total_m.dart';
+import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/ricota_m.dart';
+import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/decakila_m.dart';
 // นำเข้า Page1BottomNavigationBar
 
 class Page2M extends StatefulWidget {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/menujadever.dart';
+import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/menujadever_m.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class JadeverCategoryPage extends StatelessWidget {
   const JadeverCategoryPage({super.key});
@@ -11,7 +12,20 @@ class JadeverCategoryPage extends StatelessWidget {
         title: const Text(
           'Jadever',
           style: TextStyle(
-              fontFamily: 'Kanit'), // Apply Kanit font to AppBar title
+            fontFamily: 'Kanit',
+          ),
+        ),
+        automaticallyImplyLeading: false, // Hide the back button
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/Icon/left.svg',
+            width: 30,
+            height: 30,
+            color: const Color.fromARGB(255, 0, 0, 0),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Padding(
@@ -39,7 +53,12 @@ class JadeverCategoryPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       elevation: 4,
       child: ListTile(
-        leading: const Icon(Icons.build, color: Color(0xff185231)),
+        leading: SvgPicture.asset(
+          'assets/Icon/build.svg',
+          color: const Color(0xff185231),
+          width: 24,
+          height: 24,
+        ),
         title: Text(
           categoryName,
           style: const TextStyle(
@@ -48,7 +67,12 @@ class JadeverCategoryPage extends StatelessWidget {
             fontFamily: 'Kanit', // Apply Kanit font to ListTile text
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward, color: Color(0xfff09c1b)),
+        trailing: SvgPicture.asset(
+          'assets/Icon/arrow_forward.svg',
+          color: const Color(0xfff09c1b),
+          width: 24,
+          height: 24,
+        ),
         onTap: () {
           // Handle action for selected category
           Navigator.push(

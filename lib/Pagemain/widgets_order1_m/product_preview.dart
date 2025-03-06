@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:intl/intl.dart';
 
 class ProductPreview extends StatelessWidget {

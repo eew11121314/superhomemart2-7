@@ -6,12 +6,14 @@ import 'package:superhomemart2/login&register/login.dart'; // ตรวจสอ
 import 'package:superhomemart2/Pageguest/page4/login_hide.dart';
 import 'package:superhomemart2/Pageguest/page1/delivery.dart';
 import 'package:provider/provider.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 import 'package:superhomemart2/Pageguest/widgets_page1/page1_bar.dart'; // นำเข้า CustomBottomNavigationBar
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
-//import 'package:superhomemart2/Pageguest/page4/login_button.dart'; //**ไว้ใช้ตอน database มีปัญหา */
+import 'package:logger/logger.dart'; // นำเข้าแพ็กเกจ logger
+
+final logger = Logger(); // สร้าง instance ของ Logger
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +44,7 @@ class MyApp extends StatelessWidget {
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     final username = prefs.getString('username');
     if (isLoggedIn && username != null) {
-      print('Current logged in user: $username'); // แสดง log ใน terminal
+      logger.i('Current logged in user: $username'); // แสดง log ใน terminal
     }
     return isLoggedIn;
   }
@@ -91,7 +93,7 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
     const Page1(),
     const Page2(),
     const Page3(),
-    const LoginP4(),
+    const LoginP4(), //LoginButtonPage
   ];
 
   @override
@@ -110,9 +112,9 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,

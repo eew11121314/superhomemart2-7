@@ -114,12 +114,17 @@ flutter:
     - assets/Icon/minus.svg
     - assets/Icon/arrow-bottom.svg
     - assets/Icon/arrow_down.svg
+    - assets/Icon/arrow_forward.svg
+    - assets/Icon/list.svg
+    - assets/Icon/grid.svg
 
     - assets/Icon/email.svg
     - assets/Icon/one.svg
     - assets/Icon/check.svg
     - assets/Icon/bin.svg
     - assets/Icon/edit.svg
+    - assets/Icon/build.svg
+
     - assets/district/1.json
     - assets/district/2.json
     - assets/district/3.json

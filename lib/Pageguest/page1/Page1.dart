@@ -4,10 +4,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'productdetails.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/decakila.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/jadever.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/decakila_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/jadever_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/total_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/ricota_g.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class Page1 extends StatefulWidget {
@@ -54,9 +54,11 @@ class _Page1State extends State<Page1> {
     // ตรวจสอบสถานะการเชื่อมต่อ
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
-      setState(() {
-        _isLoading = false; // ปิดการโหลด
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // ปิดการโหลด
+        });
+      }
       return; // ออกจากฟังก์ชันถ้าออฟไลน์
     }
 
@@ -69,27 +71,35 @@ class _Page1State extends State<Page1> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         // กรองข้อมูลที่มีสถานะเป็น 'on'
-        setState(() {
-          products =
-              jsonData.where((product) => product["status"] == "on").toList();
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            products =
+                jsonData.where((product) => product["status"] == "on").toList();
+            _isLoading = false;
+          });
+        }
 
         for (var product in products) {
           await Future.delayed(const Duration(milliseconds: 50));
-          setState(() {
-            displayedProducts.add(product);
-          });
+          if (mounted) {
+            setState(() {
+              displayedProducts.add(product);
+            });
+          }
         }
       } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -118,14 +128,13 @@ class _Page1State extends State<Page1> {
             nextProductCount = products.length;
           }
 
-          setState(() {
-            displayedProducts.addAll(
-                products.getRange(displayedProducts.length, nextProductCount));
-          });
-
-          setState(() {
-            _isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              displayedProducts.addAll(products.getRange(
+                  displayedProducts.length, nextProductCount));
+              _isLoading = false;
+            });
+          }
         });
       } else {
         setState(() {
@@ -144,17 +153,21 @@ class _Page1State extends State<Page1> {
   @override
   void initState() {
     super.initState();
-    Timer.periodic(const Duration(seconds: 3), (Timer timer) {
-      if (_currentPage < _adImages.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-      _pageController.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+        if (_currentPage < _adImages.length - 1) {
+          _currentPage++;
+        } else {
+          _currentPage = 0;
+        }
+        if (_pageController.hasClients) {
+          _pageController.animateToPage(
+            _currentPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     });
     fetchUsers();
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/jadever.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/total.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/ricota.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/decakila.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/jadever_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/total_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/ricota_g.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/decakila_g.dart';
 
 class Page2 extends StatelessWidget {
   const Page2({super.key});

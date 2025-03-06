@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 //import 'package:superhomemart2/login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 //import 'package:superhomemart2/page1_main/order1_m.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_m.dart';
 import 'package:provider/provider.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:superhomemart2/Pagemain//widgets_main/order_button.dart';
 
 class ProductDetailsM extends StatefulWidget {

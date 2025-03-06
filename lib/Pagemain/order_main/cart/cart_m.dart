@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:superhomemart2/Pagemain/order_main/order1_m.dart';
 import 'package:intl/intl.dart';
 

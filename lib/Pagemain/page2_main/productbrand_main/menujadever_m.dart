@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CategoryDetailPage extends StatefulWidget {
   final String categoryName;
@@ -82,18 +83,31 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${widget.categoryName} Total',
+          '${widget.categoryName} Jadever',
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontFamily: 'Kanit', // Apply Kanit font to AppBar title
-          ),
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontFamily: 'Kanit'), // Apply Kanit font to AppBar title
         ),
         elevation: 4.0,
         centerTitle: true,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/Icon/left.svg', // SVG icon for back button
+            width: 24,
+            height: 24,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop(); // Back button functionality
+          },
+        ),
         actions: [
           IconButton(
-            icon: Icon(isGridMode ? Icons.list : Icons.grid_view),
+            icon: SvgPicture.asset(
+              isGridMode ? 'assets/Icon/list.svg' : 'assets/Icon/grid.svg',
+              width: 24,
+              height: 24,
+            ),
             onPressed: () {
               setState(() {
                 isGridMode = !isGridMode;
@@ -142,8 +156,8 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF008080),
-                fontFamily: 'Kanit',
+                color: Color(0xfff09c1b),
+                fontFamily: 'Kanit', // Apply Kanit font
               ),
             ),
             subtitle: Column(
@@ -155,7 +169,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black,
-                    fontFamily: 'Kanit',
+                    fontFamily: 'Kanit', // Apply Kanit font
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -164,16 +178,17 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[700],
-                    fontFamily: 'Kanit',
+                    fontFamily: 'Kanit', // Apply Kanit font
                   ),
                 ),
               ],
             ),
-            trailing:
-                const Icon(Icons.arrow_forward_ios, color: Color(0xFF008080)),
-            onTap: () {
-              _showProductDialog(context, product['name']);
-            },
+            trailing: SvgPicture.asset(
+              'assets/Icon/arrow_forward.svg',
+              width: 24,
+              height: 24,
+              color: const Color(0xff185231),
+            ),
           ),
         );
       },
@@ -219,13 +234,13 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF008080),
-                      fontFamily: 'Kanit',
+                      color: Color(0xfff09c1b),
+                      fontFamily: 'Kanit', // Apply Kanit font
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(1.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -236,7 +251,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                           style: const TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Kanit',
+                            fontFamily: 'Kanit', // Apply Kanit font
                           ),
                         ),
                       ),
@@ -246,7 +261,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                         style: const TextStyle(
                           fontSize: 8,
                           color: Colors.black,
-                          fontFamily: 'Kanit',
+                          fontFamily: 'Kanit', // Apply Kanit font
                         ),
                       ),
                     ],
@@ -268,24 +283,23 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
-          backgroundColor: const Color(0xFF008080),
+          backgroundColor: const Color(0xff185231),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'พบกันเร็วๆนี้กับ $productName',
                 style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Kanit',
-                ),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'Kanit'), // Apply Kanit font
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF008080),
+                  backgroundColor: const Color(0xfff09c1b),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -296,10 +310,9 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                 child: const Text(
                   'ปิด',
                   style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: 'Kanit',
-                  ),
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'Kanit'), // Apply Kanit font
                 ),
               ),
             ],

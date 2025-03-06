@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pageguest/page2/productbrand_Pageguest/menudecakila.dart';
+import 'package:superhomemart2/Pageguest/page2/productbrand_guest/menujadever_g.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class DecakilaCategoryPage extends StatelessWidget {
-  const DecakilaCategoryPage({super.key});
+class JadeverCategoryPage extends StatelessWidget {
+  const JadeverCategoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Decakila',
+          'Jadever',
           style: TextStyle(
-            fontFamily: 'Kanit', // Apply Kanit font to AppBar title
+              fontFamily: 'Kanit'), // Apply Kanit font to AppBar title
+        ),
+        automaticallyImplyLeading: false, // ซ่อนปุ่มย้อนกลับอัตโนมัติ
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/Icon/left.svg',
+            width: 30,
+            height: 30,
+            color: const Color.fromARGB(255, 0, 0, 0),
           ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Padding(
@@ -40,16 +52,26 @@ class DecakilaCategoryPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       elevation: 4,
       child: ListTile(
-        leading: const Icon(Icons.build, color: Color(0xffcd1126)),
+        leading: SvgPicture.asset(
+          'assets/Icon/build.svg', // แทนที่ด้วยเส้นทางของไฟล์ SVG ของคุณ
+          color: const Color(0xff185231),
+          width: 24,
+          height: 24,
+        ),
         title: Text(
           categoryName,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Kanit', // Apply Kanit font to category names
+            fontFamily: 'Kanit', // Apply Kanit font to ListTile text
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward, color: Color(0xffcd1126)),
+        trailing: SvgPicture.asset(
+          'assets/Icon/arrow_forward.svg', // แทนที่ด้วยเส้นทางของไฟล์ SVG ของคุณ
+          color: const Color(0xfff09c1b),
+          width: 24,
+          height: 24,
+        ),
         onTap: () {
           // Handle action for selected category
           Navigator.push(

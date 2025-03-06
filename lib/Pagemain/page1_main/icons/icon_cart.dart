@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_m.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 
 class DraggableCartIcon extends StatelessWidget {
   const DraggableCartIcon({super.key});

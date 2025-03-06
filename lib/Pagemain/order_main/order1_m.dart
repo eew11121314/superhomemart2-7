@@ -7,7 +7,7 @@ import 'package:superhomemart2/Pagemain/widgets_order1_m/_add_address_form.dart'
 import 'package:superhomemart2/Pagemain/widgets_order1_m/payment_options.dart';
 //import 'package:superhomemart2/Pagemain/widgets_order1_m/discount_form.dart';
 import 'package:superhomemart2/Pagemain/widgets_order1_m/product_preview.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart'; // นำเข้า logger
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า shared_preferences
@@ -19,7 +19,7 @@ class OrderPageM extends StatefulWidget {
   OrderPageMState createState() => OrderPageMState();
 }
 
-class OrderPageMState extends State<OrderPageM> {
+class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _fullNameController =
       TextEditingController(); // เพิ่ม TextEditingController สำหรับชื่อเต็ม
@@ -42,12 +42,27 @@ class OrderPageMState extends State<OrderPageM> {
   final Logger _logger = Logger(); // สร้าง instance ของ Logger
   String _selectedPaymentMethod =
       ''; // เพิ่มตัวแปรสำหรับเก็บวิธีการชำระเงินที่เลือก
+  bool _isLoginChecked = false; // Add a flag to check login status
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedOrderData(); // โหลดข้อมูลการสั่งซื้อที่บันทึกไว้
     _checkLoginStatus(); // ตรวจสอบสถานะการล็อกอิน
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkLoginStatus(); // ตรวจสอบสถานะการล็อกอินเมื่อแอปกลับมาใช้งาน
+    }
   }
 
   Future<void> _loadSavedOrderData() async {
@@ -68,11 +83,19 @@ class OrderPageMState extends State<OrderPageM> {
   }
 
   Future<void> _checkLoginStatus() async {
+    if (_isLoginChecked) return; // Skip if login status is already checked
+
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
     if (!isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/login');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/login');
+      });
+    } else {
+      setState(() {
+        _isLoginChecked = true; // Set the flag to true after checking
+      });
     }
   }
 
@@ -149,7 +172,8 @@ class OrderPageMState extends State<OrderPageM> {
             }),
           );
         } else {
-          // _logger.e('Failed to fetch product data for SKU: ${item['product_id']}');
+          _logger
+              .e('Failed to fetch product data for SKU: ${item['product_id']}');
         }
       }
 
@@ -157,24 +181,24 @@ class OrderPageMState extends State<OrderPageM> {
     }
 
     // // Log ข้อมูลที่กรอกมา
-    // _logger.i('Full Name: ${_fullNameController.text}');
-    // _logger.i('Company: ${_companyController.text}');
-    // _logger.i('Tax ID: ${_taxIdController.text}');
-    // _logger.i('House Number: ${_houseNumberController.text}');
-    // _logger.i('Province: ${_provinceController.text}');
-    // _logger.i('District: ${_districtController.text}');
-    // _logger.i('Sub District: ${_subDistrictController.text}');
-    // _logger.i('Postal Code: ${_postalCodeController.text}');
-    // _logger.i('Phone: ${_phoneController.text}');
-    // _logger.i('Email: ${_emailController.text}');
-    // _logger.i(
-    //     'Selected Payment Method: $_selectedPaymentMethod'); // Log the selected payment method
+    _logger.i('Full Name: ${_fullNameController.text}');
+    _logger.i('Company: ${_companyController.text}');
+    _logger.i('Tax ID: ${_taxIdController.text}');
+    _logger.i('House Number: ${_houseNumberController.text}');
+    _logger.i('Province: ${_provinceController.text}');
+    _logger.i('District: ${_districtController.text}');
+    _logger.i('Sub District: ${_subDistrictController.text}');
+    _logger.i('Postal Code: ${_postalCodeController.text}');
+    _logger.i('Phone: ${_phoneController.text}');
+    _logger.i('Email: ${_emailController.text}');
+    _logger.i(
+        'Selected Payment Method: $_selectedPaymentMethod'); // Log the selected payment method
 
     // // Log ข้อมูลสินค้า
-    // for (var item in cartProvider.cartItems) {
-    //   _logger.i(
-    //       'Product Name: ${item.productName}, Quantity: ${item.quantity}, Price: ${item.price}');
-    // }
+    for (var item in cartProvider.cartItems) {
+      _logger.i(
+          'Product Name: ${item.productName}, Quantity: ${item.quantity}, Price: ${item.price}');
+    }
 
     // บันทึกข้อมูลการสั่งซื้อลง SharedPreferences
     final prefs = await SharedPreferences.getInstance();
@@ -227,6 +251,7 @@ class OrderPageMState extends State<OrderPageM> {
         ),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 253, 254, 255),
+        automaticallyImplyLeading: false, // ซ่อนปุ่มย้อนกลับอัตโนมัติ
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/Icon/left.svg',

@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CategoryDetailPage extends StatefulWidget {
   final String categoryName;
@@ -91,9 +92,23 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
         ),
         elevation: 4.0,
         centerTitle: true,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/Icon/left.svg', // SVG icon for back button
+            width: 24,
+            height: 24,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop(); // Back button functionality
+          },
+        ),
         actions: [
           IconButton(
-            icon: Icon(isGridMode ? Icons.list : Icons.grid_view),
+            icon: SvgPicture.asset(
+              isGridMode ? 'assets/Icon/list.svg' : 'assets/Icon/grid.svg',
+              width: 24,
+              height: 24,
+            ),
             onPressed: () {
               setState(() {
                 isGridMode = !isGridMode;
@@ -171,8 +186,12 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                 ),
               ],
             ),
-            trailing:
-                const Icon(Icons.arrow_forward_ios, color: Color(0xfffd7214)),
+            trailing: SvgPicture.asset(
+              'assets/Icon/arrow_forward.svg',
+              width: 24,
+              height: 24,
+              color: const Color(0xfffd7214),
+            ),
             onTap: () {
               _showProductDialog(context, product['name']);
             },
