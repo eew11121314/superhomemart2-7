@@ -1,11 +1,9 @@
-//เกิดปัญหาไม่สามารถสมัครได้ ต้องแก้ไขโค้ดในไฟล์นี้
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart'; // นำเข้า package สำหรับใช้ TextInputFormatter
 import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
-import 'package:superhomemart2/Pageguest/page4/login_hide.dart'; // นำเข้า LoginP4
+import 'package:superhomemart2/login&register/login.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -31,6 +29,11 @@ class RegisterPageState extends State<RegisterPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // ตัวแปรสำหรับควบคุมการแสดงผลของฟิลด์
+  bool _showPhoneField = false;
+  bool _showEmailField = false;
+  bool _showAddressField = false;
 
   // ตัวแปรสำหรับตรวจสอบกรอบที่ผิด
   bool _isUsernameValid = true;
@@ -95,13 +98,14 @@ class RegisterPageState extends State<RegisterPage> {
     // ตรวจสอบข้อมูลที่กรอกในแต่ละช่อง
     setState(() {
       _isUsernameValid = username.isNotEmpty;
-      _isEmailValid = email.isNotEmpty;
+      _isEmailValid = _showEmailField ? email.isNotEmpty : true;
       _isPasswordValid = password.isNotEmpty;
       _isConfirmPasswordValid = confirmPassword.isNotEmpty;
       _isFirstNameValid = firstName.isNotEmpty;
       _isLastNameValid = lastName.isNotEmpty;
-      _isPhoneValid = phone.isNotEmpty && phone.length == 10;
-      _isAddressValid = address.isNotEmpty;
+      _isPhoneValid =
+          _showPhoneField ? phone.isNotEmpty && phone.length == 10 : true;
+      _isAddressValid = _showAddressField ? address.isNotEmpty : true;
     });
 
     // เช็คข้อมูลที่จำเป็นก่อนส่งไปยัง API
@@ -144,7 +148,7 @@ class RegisterPageState extends State<RegisterPage> {
             _showAlert(context, 'Registration successful: ${data['message']}');
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const LoginP4()),
+              MaterialPageRoute(builder: (context) => const LoginPage()),
             );
           }
         } else {
@@ -262,33 +266,36 @@ class RegisterPageState extends State<RegisterPage> {
                           : Colors.red.withAlpha((0.3 * 255).toInt()),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  // const SizedBox(height: 16),
                   // เบอร์โทร (ใส่เฉพาะตัวเลขและจำกัด 10 ตัว)
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // แค่ตัวเลข
-                      LengthLimitingTextInputFormatter(10), // จำกัด 10 ตัว
-                    ],
-                    decoration: InputDecoration(
-                      hintText: 'Phone Number',
-                      hintStyle: const TextStyle(fontFamily: 'Kanit'),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: SvgPicture.asset(
-                          'assets/Icon/phone.svg',
-                          width: 24,
-                          height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                  Visibility(
+                    visible: _showPhoneField, // ซ่อน TextField สำหรับเบอร์โทร
+                    child: TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly, // แค่ตัวเลข
+                        LengthLimitingTextInputFormatter(10), // จำกัด 10 ตัว
+                      ],
+                      decoration: InputDecoration(
+                        hintText: 'Phone Number',
+                        hintStyle: const TextStyle(fontFamily: 'Kanit'),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/Icon/phone.svg',
+                            width: 24,
+                            height: 24,
+                          ), // ใช้ SVG แทนไอคอน
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        filled: true,
+                        fillColor: _isPhoneValid
+                            ? Colors.white.withAlpha((0.8 * 255).toInt())
+                            : Colors.red.withAlpha((0.3 * 255).toInt()),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      filled: true,
-                      fillColor: _isPhoneValid
-                          ? Colors.white.withAlpha((0.8 * 255).toInt())
-                          : Colors.red.withAlpha((0.3 * 255).toInt()),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -315,28 +322,31 @@ class RegisterPageState extends State<RegisterPage> {
                           : Colors.red.withAlpha((0.3 * 255).toInt()),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  // const SizedBox(height: 16),
                   // อีเมล
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: const TextStyle(fontFamily: 'Kanit'),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: SvgPicture.asset(
-                          'assets/Icon/gmail.svg',
-                          width: 24,
-                          height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                  Visibility(
+                    visible: _showEmailField, // ซ่อน TextField สำหรับอีเมล
+                    child: TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: 'Email',
+                        hintStyle: const TextStyle(fontFamily: 'Kanit'),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/Icon/gmail.svg',
+                            width: 24,
+                            height: 24,
+                          ), // ใช้ SVG แทนไอคอน
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        filled: true,
+                        fillColor: _isEmailValid
+                            ? Colors.white.withAlpha((0.8 * 255).toInt())
+                            : Colors.red.withAlpha((0.3 * 255).toInt()),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      filled: true,
-                      fillColor: _isEmailValid
-                          ? Colors.white.withAlpha((0.8 * 255).toInt())
-                          : Colors.red.withAlpha((0.3 * 255).toInt()),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -419,28 +429,31 @@ class RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  // const SizedBox(height: 16),
                   // ที่อยู่
-                  TextField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      hintText: 'Address',
-                      hintStyle: const TextStyle(fontFamily: 'Kanit'),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: SvgPicture.asset(
-                          'assets/Icon/location.svg',
-                          width: 24,
-                          height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                  Visibility(
+                    visible: _showAddressField, // ซ่อน TextField สำหรับที่อยู่
+                    child: TextField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        hintText: 'Address',
+                        hintStyle: const TextStyle(fontFamily: 'Kanit'),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/Icon/location.svg',
+                            width: 24,
+                            height: 24,
+                          ), // ใช้ SVG แทนไอคอน
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        filled: true,
+                        fillColor: _isAddressValid
+                            ? Colors.white.withAlpha((0.8 * 255).toInt())
+                            : Colors.red.withAlpha((0.3 * 255).toInt()),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      filled: true,
-                      fillColor: _isAddressValid
-                          ? Colors.white.withAlpha((0.8 * 255).toInt())
-                          : Colors.red.withAlpha((0.3 * 255).toInt()),
                     ),
                   ),
                   const SizedBox(height: 20),

@@ -61,10 +61,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           isLoading = false;
           userData = jsonData[0]; // เข้าถึง object แรกใน array
+          if (userData!['image_path'] != null &&
+              userData!['image_path'].isNotEmpty) {
+            _image = XFile(userData!['image_path']);
+          }
         });
         debugPrint("Success: $jsonData");
       } else {
         debugPrint("Failed to load profile: ${response.statusCode}");
+        debugPrint("Response body: ${response.body}");
         setState(() => isLoading = false);
       }
     } catch (e) {
@@ -102,10 +107,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ฟังก์ชันสำหรับอัปโหลดไฟล์ไปยังเซิร์ฟเวอร์
   Future<void> _uploadImage(File imageFile) async {
     final uri = Uri.parse(
-        'https://superhomemart.duckdns.org/api/user/member/app/upload'); // เปลี่ยน URL เป็นที่อยู่ IP ของเซิร์ฟเวอร์และพอร์ตใหม่
+        'https://superhomemart.duckdns.org/api/user/member/app/upload'); // ตรวจสอบ URL ให้แน่ใจว่าถูกต้อง
     final mimeType = lookupMimeType(imageFile.path);
 
+    final prefs = await SharedPreferences.getInstance();
+    final username =
+        prefs.getString('username'); // ดึง username จาก SharedPreferences
+
     final request = http.MultipartRequest('POST', uri)
+      ..fields['username'] = username! // เพิ่ม username ใน body ของ request
+      ..fields['image_path'] =
+          imageFile.path // เพิ่ม image_path ใน body ของ request
       ..files.add(await http.MultipartFile.fromPath(
         'image',
         imageFile.path,
@@ -115,7 +127,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      debugPrint('File uploaded successfully');
+      final responseData = await http.Response.fromStream(response);
+      final responseDataJson = json.decode(responseData.body);
+
+      if (responseDataJson['message'] == "Upload successful") {
+        debugPrint('File uploaded successfully');
+        final newImagePath = responseDataJson['imagePath'];
+
+        // อัปเดตภาพโปรไฟล์ใหม่
+        setState(() {
+          _image = XFile(newImagePath);
+        });
+
+        // บันทึก URL ของภาพโปรไฟล์ใน SharedPreferences
+        await prefs.setString('user_image_path_$username', newImagePath);
+        debugPrint('New image path: $newImagePath');
+
+        // แสดง log ว่าทำการกดส่งรูปภาพไปเก็บใน SQL แล้ว
+        debugPrint('Image uploaded and saved to SQL for user: $username');
+      } else {
+        debugPrint("Error uploading image: ${responseDataJson['error']}");
+      }
     } else {
       debugPrint('File upload failed with status: ${response.statusCode}');
     }
@@ -124,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ฟังก์ชันสำหรับลบไฟล์จากเซิร์ฟเวอร์
   Future<void> _deleteImage() async {
     final uri = Uri.parse(
-        'https://superhomemart.duckdns.org/api/user/member/app/delete'); // เปลี่ยน URL เป็นที่อยู่ IP ของเซิร์ฟเวอร์และพอร์ตใหม่
+        'https://superhomemart.duckdns.org/api/user/member/app/delete'); // ตรวจสอบ URL ให้แน่ใจว่าถูกต้อง
 
     final response = await http.post(
       uri,
@@ -203,53 +235,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ? const Center(child: CircularProgressIndicator())
           : userData == null
               ? const Center(child: Text("Unable to connect to user profile."))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // ใช้ Stack เพื่อจัดตำแหน่ง
-                      Stack(
-                        clipBehavior:
-                            Clip.none, // ไม่ให้ Stack ครอบคลุม widget อื่น
-                        children: [
-                          GestureDetector(
-                            onTap: () => _viewImage(
-                                context), // เมื่อกดที่รูปภาพจะแสดงรูปขนาดใหญ่
-                            child: CircleAvatar(
-                              radius: imageSize, // ใช้ตัวแปรที่ควบคุมขนาดรูปภาพ
-                              backgroundImage: _image != null
-                                  ? FileImage(File(
-                                      _image!.path)) // แสดงภาพจาก local storage
-                                  : userData!['image_path'] != null
-                                      ? NetworkImage(userData!['image_path'])
-                                      : const AssetImage(
-                                              'assets/default_user.png')
-                                          as ImageProvider,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: -0, // ขยับไอคอนลงมาจากวงกลม
-                            right: -5, // ขยับไอคอนไปทางขวา
-                            child: GestureDetector(
-                              onTap:
-                                  _pickImage, // เมื่อกดที่ไอคอนจะเปิดให้เลือกภาพใหม่
-                              child: SvgPicture.asset(
-                                'assets/Icon/add-camera.svg', // ไฟล์ SVG ที่จะใช้เป็นไอคอน
-                                width: 30,
-                                height: 30,
-                                color: const Color.fromARGB(
-                                    150, 190, 184, 184), // กำหนดสีไอคอนให้จางลง
+              : SingleChildScrollView(
+                  // เพิ่ม SingleChildScrollView
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize:
+                          MainAxisSize.min, // ให้ Column ใช้พื้นที่น้อยที่สุด
+                      children: [
+                        // ใช้ Stack เพื่อจัดตำแหน่ง
+                        Stack(
+                          clipBehavior:
+                              Clip.none, // ไม่ให้ Stack ครอบคลุม widget อื่น
+                          children: [
+                            GestureDetector(
+                              onTap: () => _viewImage(
+                                  context), // เมื่อกดที่รูปภาพจะแสดงรูปขนาดใหญ่
+                              child: CircleAvatar(
+                                radius:
+                                    imageSize, // ใช้ตัวแปรที่ควบคุมขนาดรูปภาพ
+                                backgroundImage: _image != null
+                                    ? FileImage(File(_image!
+                                        .path)) // แสดงภาพจาก local storage
+                                    : userData!['image_path'] != null &&
+                                            userData!['image_path'].isNotEmpty
+                                        ? NetworkImage(
+                                            'https://superhomemart.duckdns.org/EIWtest/picuser/${userData!['image_path']}')
+                                        : const AssetImage(
+                                                'assets/default_user.png')
+                                            as ImageProvider,
                               ),
                             ),
-                          ),
-                          if (_image != null)
                             Positioned(
                               bottom: -0, // ขยับไอคอนลงมาจากวงกลม
-                              left: -5, // ขยับไอคอนไปทางซ้าย
+                              right: -5, // ขยับไอคอนไปทางขวา
                               child: GestureDetector(
-                                onTap: _deleteImage, // เมื่อกดที่ไอคอนจะลบภาพ
+                                onTap:
+                                    _pickImage, // เมื่อกดที่ไอคอนจะเปิดให้เลือกภาพใหม่
                                 child: SvgPicture.asset(
-                                  'assets/Icon/delete.svg', // ไฟล์ SVG ที่จะใช้เป็นไอคอน
+                                  'assets/Icon/add-camera.svg', // ไฟล์ SVG ที่จะใช้เป็นไอคอน
                                   width: 30,
                                   height: 30,
                                   color: const Color.fromARGB(150, 190, 184,
@@ -257,126 +281,143 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "${userData!['fname']} ${userData!['lname']}",
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                      Text("@${userData!['username']}",
-                          style: const TextStyle(
-                              fontSize: 18, color: Colors.grey)),
-                      const Divider(),
-                      ListTile(
-                        leading: SvgPicture.asset(
-                          'assets/Icon/phone.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                          width: 24,
-                          height: 24,
-                        ),
-                        title: Text(userData!['number'] ?? 'N/A'),
-                        trailing: IconButton(
-                          icon: SvgPicture.asset(
-                            'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                            width: 24,
-                            height: 24,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditProfileScreen(
-                                  field: 'number',
-                                  value: userData!['number'] ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      ListTile(
-                        leading: SvgPicture.asset(
-                          'assets/Icon/email.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                          width: 24,
-                          height: 24,
-                        ),
-                        title: Text(userData!['email'] ?? 'N/A'),
-                        trailing: IconButton(
-                          icon: SvgPicture.asset(
-                            'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                            width: 24,
-                            height: 24,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditProfileScreen(
-                                  field: 'email',
-                                  value: userData!['email'] ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      ListTile(
-                        leading: SvgPicture.asset(
-                          'assets/Icon/home2.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                          width: 24,
-                          height: 24,
-                        ),
-                        title: Text(userData!['address'] ?? 'N/A'),
-                        trailing: IconButton(
-                          icon: SvgPicture.asset(
-                            'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
-                            width: 24,
-                            height: 24,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditProfileScreen(
-                                  field: 'address',
-                                  value: userData!['address'] ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: () {
-                          // แสดงการแจ้งเตือนก่อนออกจากระบบ
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("ออกจากระบบ"),
-                                content: const Text("คุณออกจากระบบแล้ว"),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _logout(); // เรียกฟังก์ชัน logout
-                                    },
-                                    child: const Text("ตกลง"),
+                            if (_image != null)
+                              Positioned(
+                                bottom: -0, // ขยับไอคอนลงมาจากวงกลม
+                                left: -5, // ขยับไอคอนไปทางซ้าย
+                                child: GestureDetector(
+                                  onTap: _deleteImage, // เมื่อกดที่ไอคอนจะลบภาพ
+                                  child: SvgPicture.asset(
+                                    'assets/Icon/delete.svg', // ไฟล์ SVG ที่จะใช้เป็นไอคอน
+                                    width: 30,
+                                    height: 30,
+                                    color: const Color.fromARGB(150, 190, 184,
+                                        184), // กำหนดสีไอคอนให้จางลง
                                   ),
-                                ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "${userData!['fname']} ${userData!['lname']}",
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold),
+                        ),
+                        Text("@${userData!['username']}",
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.grey)),
+                        const Divider(),
+                        ListTile(
+                          leading: SvgPicture.asset(
+                            'assets/Icon/phone.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                            width: 24,
+                            height: 24,
+                          ),
+                          title: Text(userData!['number'] ?? 'N/A'),
+                          trailing: IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                              width: 24,
+                              height: 24,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileScreen(
+                                    field: 'number',
+                                    value: userData!['number'] ?? '',
+                                  ),
+                                ),
                               );
                             },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(
-                              double.infinity, 50), // ปรับขนาดปุ่มให้เต็มหน้าจอ
+                          ),
                         ),
-                        child: const Text("ออกจากระบบ"),
-                      ),
-                    ],
+                        ListTile(
+                          leading: SvgPicture.asset(
+                            'assets/Icon/email.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                            width: 24,
+                            height: 24,
+                          ),
+                          title: Text(userData!['email'] ?? 'N/A'),
+                          trailing: IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                              width: 24,
+                              height: 24,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileScreen(
+                                    field: 'email',
+                                    value: userData!['email'] ?? '',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          leading: SvgPicture.asset(
+                            'assets/Icon/home2.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                            width: 24,
+                            height: 24,
+                          ),
+                          title: Text(userData!['address'] ?? 'N/A'),
+                          trailing: IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/Icon/edit.svg', // ใช้ไฟล์ SVG แทนไอคอน
+                              width: 24,
+                              height: 24,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileScreen(
+                                    field: 'address',
+                                    value: userData!['address'] ?? '',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                            height: 20), // เพิ่มพื้นที่ก่อนปุ่มออกจากระบบ
+                        ElevatedButton(
+                          onPressed: () {
+                            // แสดงการแจ้งเตือนก่อนออกจากระบบ
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("ออกจากระบบ"),
+                                  content: const Text("คุณออกจากระบบแล้ว"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        _logout(); // เรียกฟังก์ชัน logout
+                                      },
+                                      child: const Text("ตกลง"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity,
+                                50), // ปรับขนาดปุ่มให้เต็มหน้าจอ
+                          ),
+                          child: const Text("ออกจากระบบ"),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
     );

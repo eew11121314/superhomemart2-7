@@ -3,7 +3,6 @@ import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/jadever_m.d
 import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/total_m.dart';
 import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/ricota_m.dart';
 import 'package:superhomemart2/Pagemain/page2_main/productbrand_main/decakila_m.dart';
-// นำเข้า Page1BottomNavigationBar
 
 class Page2M extends StatefulWidget {
   const Page2M({super.key});
@@ -13,6 +12,20 @@ class Page2M extends StatefulWidget {
 }
 
 class _Page2MState extends State<Page2M> {
+  bool _showBackButton = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ตรวจสอบเส้นทางการนำทางที่มาก่อนหน้า
+    ModalRoute? previousRoute = ModalRoute.of(context);
+    if (previousRoute != null && previousRoute.settings.name == '/') {
+      setState(() {
+        _showBackButton = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +36,8 @@ class _Page2MState extends State<Page2M> {
               fontFamily: 'Kanit'), // Apply Kanit font to AppBar title
         ),
         centerTitle: true,
-        automaticallyImplyLeading: false, // ซ่อนปุ่มย้อนกลับอัตโนมัติ
+        automaticallyImplyLeading:
+            _showBackButton, // ซ่อนปุ่มย้อนกลับอัตโนมัติถ้าไม่ต้องการ
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

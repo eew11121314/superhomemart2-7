@@ -35,6 +35,8 @@ class OrderSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -110,10 +112,11 @@ class OrderSummaryPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ยืนยันการสั่งซื้อ',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: screenWidth *
+                            0.045, // ปรับขนาดตัวอักษรตามขนาดหน้าจอ
                         fontFamily: 'Kanit',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

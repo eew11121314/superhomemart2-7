@@ -4,11 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final double iconSize; // เพิ่มพารามิเตอร์ iconSize
 
   const CustomBottomNavigationBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    this.iconSize = 24.0, // กำหนดค่าเริ่มต้นให้กับ iconSize
   }) : super(key: key);
 
   @override
@@ -25,8 +27,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/Icon/home.svg',
-            width: 24,
-            height: 24,
+            width: iconSize,
+            height: iconSize,
             color: currentIndex == 0 ? Colors.black : Colors.grey,
           ),
           label: 'Home',
@@ -34,8 +36,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/Icon/menu.svg',
-            width: 24,
-            height: 24,
+            width: iconSize,
+            height: iconSize,
             color: currentIndex == 1 ? Colors.black : Colors.grey,
           ),
           label: 'Menu',
@@ -43,8 +45,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/Icon/settings.svg',
-            width: 24,
-            height: 24,
+            width: iconSize,
+            height: iconSize,
             color: currentIndex == 2 ? Colors.black : Colors.grey,
           ),
           label: 'Settings',
@@ -52,8 +54,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/Icon/user.svg',
-            width: 24,
-            height: 24,
+            width: iconSize,
+            height: iconSize,
             color: currentIndex == 3 ? Colors.black : Colors.grey,
           ),
           label: 'Profile',

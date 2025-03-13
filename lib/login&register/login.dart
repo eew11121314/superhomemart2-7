@@ -10,7 +10,9 @@ import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำ
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final bool showBackButton;
+
+  const LoginPage({super.key, this.showBackButton = true});
 
   @override
   LoginPageState createState() => LoginPageState();
@@ -165,19 +167,20 @@ class LoginPageState extends State<LoginPage> {
             ),
           ),
           // ปุ่มย้อนกลับ
-          Positioned(
-            top: 10,
-            left: 10,
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/Icon/left.svg',
-                color: Colors.white,
-              ), // ใช้ SVG แทนไอคอน
-              onPressed: () {
-                Navigator.pop(context);
-              },
+          if (widget.showBackButton)
+            Positioned(
+              top: 10,
+              left: 10,
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  'assets/Icon/left.svg',
+                  color: Colors.white,
+                ), // ใช้ SVG แทนไอคอน
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ),
-          ),
           // เนื้อหาหลัก
           Center(
             child: SingleChildScrollView(
@@ -312,33 +315,33 @@ class LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/Icon/facebook.svg',
-                          width: 30,
-                          height: 30,
-                          color: const Color.fromARGB(180, 255, 255, 255),
-                        ), // ใช้ SVG แทนไอคอน
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/Icon/gmail.svg',
-                          width: 30,
-                          height: 30,
-                          color: const Color.fromARGB(180, 255, 255, 255),
-                        ), // ใช้ SVG แทนไอคอน
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/Icon/phone.svg',
-                          width: 30,
-                          height: 30,
-                          color: const Color.fromARGB(180, 255, 255, 255),
-                        ), // ใช้ SVG แทนไอคอน
-                        onPressed: () {},
-                      ),
+                      // IconButton(
+                      //   icon: SvgPicture.asset(
+                      //     'assets/Icon/facebook.svg',
+                      //     width: 30,
+                      //     height: 30,
+                      //     color: const Color.fromARGB(180, 255, 255, 255),
+                      //   ), // ใช้ SVG แทนไอคอน
+                      //   onPressed: () {},
+                      // ),
+                      //   IconButton(
+                      //     icon: SvgPicture.asset(
+                      //       'assets/Icon/gmail.svg',
+                      //       width: 30,
+                      //       height: 30,
+                      //       color: const Color.fromARGB(180, 255, 255, 255),
+                      //     ), // ใช้ SVG แทนไอคอน
+                      //     onPressed: () {},
+                      //   ),
+                      //   IconButton(
+                      //     icon: SvgPicture.asset(
+                      //       'assets/Icon/phone.svg',
+                      //       width: 30,
+                      //       height: 30,
+                      //       color: const Color.fromARGB(180, 255, 255, 255),
+                      //     ), // ใช้ SVG แทนไอคอน
+                      //     onPressed: () {},
+                      //   ),
                     ],
                   ),
                   const SizedBox(height: 20),

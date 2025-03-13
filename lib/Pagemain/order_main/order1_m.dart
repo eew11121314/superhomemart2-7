@@ -11,6 +11,8 @@ import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart'; // นำเข้า logger
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า shared_preferences
+import 'package:superhomemart2/Pagemain/widgets_order1_m/accountBank_m.dart'; // นำเข้า accountBank_m.dart
+import 'package:superhomemart2/Pagemain/orderSummary_main/order_summary_page.dart'; // นำเข้า order_summary_page.dart
 
 class OrderPageM extends StatefulWidget {
   const OrderPageM({super.key});
@@ -34,9 +36,12 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
   final TextEditingController _postalCodeController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _usernameController =
       TextEditingController(); // เพิ่ม TextEditingController สำหรับ username
+  final TextEditingController _shippingCostController =
+      TextEditingController(); // เพิ่ม TextEditingController สำหรับค่าจัดส่ง
+  final TextEditingController _textAboutController =
+      TextEditingController(); // เพิ่ม TextEditingController สำหรับข้อความเกี่ยวกับ
 
   bool _isAddressFormVisible = true;
   final Logger _logger = Logger(); // สร้าง instance ของ Logger
@@ -79,6 +84,10 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
       _postalCodeController.text = prefs.getString('postalCode') ?? '';
       _phoneController.text = prefs.getString('phone') ?? '';
       _emailController.text = prefs.getString('email') ?? '';
+      _shippingCostController.text =
+          prefs.getString('shippingCost') ?? ''; // โหลดค่าจัดส่งที่บันทึกไว้
+      _textAboutController.text = prefs.getString('textAbout') ??
+          ''; // โหลดข้อความเกี่ยวกับที่บันทึกไว้
     });
   }
 
@@ -108,7 +117,6 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     final cartItems = cartProvider.cartItems.map((item) {
       return {
         'product_id': item.productId,
-        // 'product_ids': item.productToid,
         'quantity': item.quantity,
       };
     }).toList();
@@ -122,9 +130,10 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
       'phone': _phoneController.text,
       'email': _emailController.text,
       'delivery_method': _selectedPaymentMethod,
-      'shipping_cost': 0, // เพิ่มค่าจัดส่งที่ดึงมา
+      'shipping_cost': _shippingCostController.text, // เพิ่มค่าจัดส่งที่ดึงมา
+      'text_about': _textAboutController.text, // เพิ่มข้อความเกี่ยวกับที่ดึงมา
       'cart': cartItems,
-      'website': 'Website SHM',
+      'website': 'appshm',
     };
 
     final response = await http.post(
@@ -140,26 +149,27 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+
       final orderId = data['order_id'];
 
-      // ดึงข้อมูลจาก API /product โดยใช้ API Key
+      // ตรวจสอบ product_id ก่อนส่งข้อมูลไปยัง API order-items
       for (var item in cartItems) {
         final productResponse = await http.get(
           Uri.parse(
-              "https://superhomemart.duckdns.org/product?sku=${item['product_id']}"),
+              "http://superhomemart.duckdns.org/api/product/${item['product_id']}"),
           headers: {
-            'Authorization': 'Bearer $apiKey', // เพิ่ม API Key ใน header
+            'x-api-key': '$apiKey', // เพิ่ม API Key ใน header
           },
         );
 
         if (productResponse.statusCode == 200) {
           final productData = jsonDecode(productResponse.body);
-          final productId = productData['id']; // ดึงค่า ID จากข้อมูลที่ได้
+          _logger.i(productData);
+          final productId = int.tryParse(productData['id']
+              .toString()); // ดึงค่า ID จากข้อมูลที่ได้และแปลงเป็น int
+          _logger.i(productId);
 
           // ส่งข้อมูลรายการสินค้าของคำสั่งซื้อนั้นไปยัง API
-          _logger.i(item);
-          _logger.i(
-              'Order ID: $orderId, Product ID: $productId, Quantity: ${item['quantity']}');
           await http.post(
             Uri.parse("https://superhomemart.duckdns.org/api/order-items"),
             headers: {
@@ -177,10 +187,27 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
         }
       }
 
-      // Verify the order ID in another table
+      // Navigate to Order Summary Page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OrderSummaryPage(
+            fname: _fullNameController.text,
+            lname: '', // เพิ่ม lname ถ้ามี
+            houseNumber: _houseNumberController.text,
+            province: _provinceController.text,
+            district: _districtController.text,
+            subDistrict: _subDistrictController.text,
+            postalCode: _postalCodeController.text,
+            phone: _phoneController.text,
+            email: _emailController.text,
+            paymentMethod: _selectedPaymentMethod,
+          ),
+        ),
+      );
     }
 
-    // // Log ข้อมูลที่กรอกมา
+    // Log ข้อมูลที่กรอกมา
     _logger.i('Full Name: ${_fullNameController.text}');
     _logger.i('Company: ${_companyController.text}');
     _logger.i('Tax ID: ${_taxIdController.text}');
@@ -191,10 +218,11 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     _logger.i('Postal Code: ${_postalCodeController.text}');
     _logger.i('Phone: ${_phoneController.text}');
     _logger.i('Email: ${_emailController.text}');
-    _logger.i(
-        'Selected Payment Method: $_selectedPaymentMethod'); // Log the selected payment method
+    _logger.i('Shipping Cost: ${_shippingCostController.text}');
+    _logger.i('Text About: ${_textAboutController.text}');
+    _logger.i('Selected Payment Method: $_selectedPaymentMethod');
 
-    // // Log ข้อมูลสินค้า
+    // Log ข้อมูลสินค้า
     for (var item in cartProvider.cartItems) {
       _logger.i(
           'Product Name: ${item.productName}, Quantity: ${item.quantity}, Price: ${item.price}');
@@ -213,6 +241,10 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     await prefs.setString('postalCode', _postalCodeController.text);
     await prefs.setString('phone', _phoneController.text);
     await prefs.setString('email', _emailController.text);
+    await prefs.setString(
+        'shippingCost', _shippingCostController.text); // บันทึกค่าจัดส่ง
+    await prefs.setString(
+        'textAbout', _textAboutController.text); // บันทึกข้อความเกี่ยวกับ
   }
 
   void _changeAddress() {
@@ -242,6 +274,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -303,6 +336,10 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                   companyController:
                       _companyController, // เพิ่ม companyController
                   taxIdController: _taxIdController, // เพิ่ม taxIdController
+                  shippingCostController:
+                      _shippingCostController, // เพิ่ม shippingCostController
+                  textAboutController:
+                      _textAboutController, // เพิ่ม textAboutController
                 ),
               const SizedBox(height: 20),
               const SizedBox(height: 20),
@@ -311,6 +348,8 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                 onQRCodePayment: _handleQRCodePayment,
                 onCashOnDelivery: _handleCashOnDelivery,
               ),
+              const SizedBox(height: 20),
+              AccountBank(), // เพิ่ม AccountBank widget ที่นี่
               const SizedBox(height: 20),
               ProductPreview(cartItems: cartProvider.cartItems),
               const SizedBox(height: 20),
@@ -326,10 +365,11 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ดำเนินการสั่งซื้อ',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: screenWidth *
+                            0.045, // ปรับขนาดตัวอักษรตามขนาดหน้าจอ
                         fontFamily: 'Kanit',
                         fontWeight: FontWeight.bold,
                       ),
@@ -337,6 +377,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

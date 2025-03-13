@@ -3,10 +3,10 @@ import 'package:superhomemart2/Pageguest/page1/Page1.dart';
 import 'package:superhomemart2/Pageguest/page2/Page2.dart';
 import 'package:superhomemart2/Pageguest/page3/Page3.dart';
 import 'package:superhomemart2/login&register/login.dart'; // ตรวจสอบการนำเข้า LoginPage
-import 'package:superhomemart2/Pageguest/page4/login_hide.dart';
 import 'package:superhomemart2/Pageguest/page1/delivery.dart';
 import 'package:provider/provider.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/order_main/order1_m.dart'; // นำเข้า OrderPageM
 import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 import 'package:superhomemart2/Pageguest/widgets_page1/page1_bar.dart'; // นำเข้า CustomBottomNavigationBar
@@ -71,6 +71,8 @@ class MyApp extends StatelessWidget {
               '/delivery': (context) => const DeliveryPage(
                     productName: '',
                   ),
+              '/order': (context) =>
+                  const OrderPageM(), // เพิ่มเส้นทางสำหรับ OrderPageM
             },
           );
         }
@@ -93,7 +95,7 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
     const Page1(),
     const Page2(),
     const Page3(),
-    const LoginP4(), //LoginButtonPage
+    const LoginPage(showBackButton: false), //LoginButtonPage
   ];
 
   @override
@@ -111,6 +113,8 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -119,6 +123,7 @@ class HomeScreenGuestState extends State<HomeScreenGuest> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
+        iconSize: screenWidth * 0.07, // ปรับขนาดไอคอนตามขนาดหน้าจอ
       ),
     );
   }

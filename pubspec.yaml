@@ -37,6 +37,8 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter:
+  uses-material-design: true
+
   fonts:
     - family: Kanit
       fonts:
@@ -67,7 +69,6 @@ flutter:
     - assets/brand/TOTAL@2x.png
     - assets/brand/RICOTA_O.png
 
-  
     - assets/Scooter Courier.gif
     
     - assets/default_user.jpg
@@ -129,6 +130,5 @@ flutter:
     - assets/district/2.json
     - assets/district/3.json
     - assets/district/thai_geographies.json
-   
 
     - assets/QRCODE_test.png

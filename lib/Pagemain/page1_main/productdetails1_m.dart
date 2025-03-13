@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-//import 'package:superhomemart2/login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-//import 'package:superhomemart2/page1_main/order1_m.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_m.dart';
 import 'package:provider/provider.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:superhomemart2/Pagemain//widgets_main/order_button.dart';
 
 class ProductDetailsM extends StatefulWidget {
-  // final String id;
   final String name;
   final String image;
   final double price;
@@ -29,7 +26,6 @@ class ProductDetailsM extends StatefulWidget {
 
   const ProductDetailsM({
     super.key,
-    // required this.id,
     required this.name,
     required this.image,
     required this.price,
@@ -48,6 +44,7 @@ class ProductDetailsM extends StatefulWidget {
     required this.sh_width,
     required this.sh_height,
   });
+
   @override
   _ProductDetailsMState createState() => _ProductDetailsMState();
 }
@@ -92,16 +89,16 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
 
     List<String?> photos = [
       widget.image.isNotEmpty ? widget.image : defaultImageUrl,
-      widget.photo_1.isNotEmpty ? widget.photo_1 : defaultImageUrl,
-      widget.photo_2.isNotEmpty ? widget.photo_2 : defaultImageUrl,
-      widget.photo_3.isNotEmpty ? widget.photo_3 : defaultImageUrl,
-      widget.photo_4.isNotEmpty ? widget.photo_4 : defaultImageUrl,
-      widget.photo_5.isNotEmpty ? widget.photo_5 : defaultImageUrl,
-      widget.photo_6.isNotEmpty ? widget.photo_6 : defaultImageUrl,
+      widget.photo_1.isNotEmpty ? widget.photo_1 : null,
+      widget.photo_2.isNotEmpty ? widget.photo_2 : null,
+      widget.photo_3.isNotEmpty ? widget.photo_3 : null,
+      widget.photo_4.isNotEmpty ? widget.photo_4 : null,
+      widget.photo_5.isNotEmpty ? widget.photo_5 : null,
+      widget.photo_6.isNotEmpty ? widget.photo_6 : null,
     ];
 
-    // ตรวจสอบว่ามีรูปที่ไม่เป็น null หรือไม่
-    bool hasValidPhotos = photos.any((photo) => photo != null);
+    // กรองรูปภาพที่ไม่เป็น null
+    List<String?> validPhotos = photos.where((photo) => photo != null).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -128,7 +125,7 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (hasValidPhotos)
+                if (validPhotos.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
@@ -155,13 +152,9 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                                 currentPage = index;
                               });
                             },
-                            itemCount: photos.length,
+                            itemCount: validPhotos.length,
                             itemBuilder: (context, index) {
-                              if (index >= photos.length) {
-                                return Container();
-                              }
-
-                              String? photoUrl = photos[index];
+                              String? photoUrl = validPhotos[index];
 
                               return GestureDetector(
                                 onTap: () {
@@ -170,7 +163,7 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           FullScreenImageViewer(
-                                        photos: photos,
+                                        photos: validPhotos,
                                         initialIndex: index,
                                       ),
                                     ),
@@ -194,29 +187,30 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                             },
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            photos.length,
-                            (dotIndex) => GestureDetector(
-                              onTap: () {
-                                _pageController.jumpToPage(dotIndex);
-                              },
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                width: 12.0,
-                                height: 12.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: currentPage == dotIndex
-                                      ? Colors.blue
-                                      : Colors.grey,
+                        if (validPhotos.length > 1)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              validPhotos.length,
+                              (dotIndex) => GestureDetector(
+                                onTap: () {
+                                  _pageController.jumpToPage(dotIndex);
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 4.0),
+                                  width: 12.0,
+                                  height: 12.0,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: currentPage == dotIndex
+                                        ? Colors.blue
+                                        : Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -229,40 +223,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_1.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 1;
-                                  _pageController.jumpToPage(1);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 1
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_1}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_1,
+                              index: 1,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -274,40 +242,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_2.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 2;
-                                  _pageController.jumpToPage(2);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 2
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_2}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_2,
+                              index: 2,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -319,40 +261,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_3.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 3;
-                                  _pageController.jumpToPage(3);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 3
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_3}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_3,
+                              index: 3,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -364,40 +280,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_4.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 4;
-                                  _pageController.jumpToPage(4);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 4
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_4}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_4,
+                              index: 4,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -409,40 +299,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_5.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 5;
-                                  _pageController.jumpToPage(5);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 5
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_5}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_5,
+                              index: 5,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -454,40 +318,14 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
                         children: [
                           Visibility(
                             visible: widget.photo_6.isNotEmpty,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = 6;
-                                  _pageController.jumpToPage(6);
-                                });
-                              },
-                              child: Container(
-                                decoration: imageDecoration.copyWith(
-                                  border: Border.all(
-                                    color: selectedIndex == 6
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    "http://superhomemart.duckdns.org:80/upload/${widget.photo_6}.jpg",
-                                    width: imageSize,
-                                    height: imageSize,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.network(
-                                        defaultImageUrl,
-                                        width: imageSize,
-                                        height: imageSize,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                            child: ImageThumbnail(
+                              photoUrl: widget.photo_6,
+                              index: 6,
+                              selectedIndex: selectedIndex,
+                              pageController: _pageController,
+                              imageSize: imageSize,
+                              imageDecoration: imageDecoration,
+                              defaultImageUrl: defaultImageUrl,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -600,7 +438,6 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
           ),
         ),
       ),
-      // filepath: /c:/superhomemart2-7/lib/page1_main/productdetails1_m.dart
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         child: Row(
@@ -630,7 +467,6 @@ class _ProductDetailsMState extends State<ProductDetailsM> {
             Expanded(
               child: OrderButton(
                 productId: widget.sku,
-                // productToid: widget.id,
                 productName: widget.name,
                 imageUrl: widget.image,
                 price: widget.price,
@@ -670,6 +506,11 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+    // กรองรายการรูปภาพที่เป็น null หรือช่องว่าง
+    List<String?> validPhotos = widget.photos
+        .where((photo) => photo != null && photo.isNotEmpty)
+        .toList();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -689,7 +530,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
       body: Stack(
         children: [
           PageView.builder(
-            itemCount: widget.photos.length,
+            itemCount: validPhotos.length,
             controller: pageController,
             onPageChanged: (index) {
               setState(() {
@@ -698,9 +539,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             },
             itemBuilder: (context, index) {
               return Center(
-                child: widget.photos[index] != null
+                child: validPhotos[index] != null
                     ? Image.network(
-                        "http://superhomemart.duckdns.org:80/upload/${widget.photos[index]}.jpg",
+                        "http://superhomemart.duckdns.org:80/upload/${validPhotos[index]}.jpg",
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
@@ -720,7 +561,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                widget.photos.length,
+                validPhotos.length,
                 (dotIndex) => GestureDetector(
                   onTap: () {
                     pageController.jumpToPage(dotIndex);
@@ -740,6 +581,63 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ImageThumbnail extends StatelessWidget {
+  final String? photoUrl;
+  final int index;
+  final int selectedIndex;
+  final PageController pageController;
+  final double imageSize;
+  final BoxDecoration imageDecoration;
+  final String defaultImageUrl;
+
+  const ImageThumbnail({
+    required this.photoUrl,
+    required this.index,
+    required this.selectedIndex,
+    required this.pageController,
+    required this.imageSize,
+    required this.imageDecoration,
+    required this.defaultImageUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+      visible: photoUrl != null && photoUrl!.isNotEmpty,
+      child: GestureDetector(
+        onTap: () {
+          pageController.jumpToPage(index);
+        },
+        child: Container(
+          decoration: imageDecoration.copyWith(
+            border: Border.all(
+              color: selectedIndex == index ? Colors.blue : Colors.grey,
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              "http://superhomemart.duckdns.org:80/upload/$photoUrl.jpg",
+              width: imageSize,
+              height: imageSize,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(
+                  defaultImageUrl,
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+        ),
       ),
     );
   }

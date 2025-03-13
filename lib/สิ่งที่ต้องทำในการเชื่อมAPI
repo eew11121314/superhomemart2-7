@@ -1,49 +1,39 @@
 1 มี.ค. 68 (อิว)
 
-ในหน้า order1_m มี API https://superhomemart.duckdns.org/api/orders ส่งไปยังเซิร์ฟเวอร์ได้แล้วแต่มันติดตรงที่ว่าหา ID ไม่เจอเพราะตอนทำช่วงแรกหน้า page1_m.dart ไม่ได้ทำการระบุ ID เข้ามา 
-
-
-จึงใช้การเทียบของรหัส sku ว่าตรงกันหรือไม่ ถ้าตรงกันก็จะเอา ID มาแสดง 
-โค้ดในส่วนนี้คือสิ่งที่ต้องแก้ 
-///////////////////////////////////////////////////////////////////////////////////////
- for (var item in cartItems) {
-        final productResponse = await http.get(
-          Uri.parse(
-              "https://superhomemart.duckdns.org/product?sku=${item['product_id']}"),
-          headers: {
-            'Authorization': 'Bearer $apiKey', // เพิ่ม API Key ใน header
-          },
-        );
-
-        if (productResponse.statusCode == 200) {
-          final productData = jsonDecode(productResponse.body);
-          final productId = productData['id']; // ดึงค่า ID จากข้อมูลที่ได้
-
-          // ส่งข้อมูลรายการสินค้าของคำสั่งซื้อนั้นไปยัง API
-          _logger.i(item);
-          _logger.i(
-              'Order ID: $orderId, Product ID: $productId, Quantity: ${item['quantity']}');
-          await http.post(
-            Uri.parse("https://superhomemart.duckdns.org/api/order-items"),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'order_id': orderId,
-              'product_id': productId, // ใช้ค่า ID ที่ได้จาก API /product
-              'quantity': item['quantity'],
-            }),
-          );
-        } else {
-          // _logger.e('Failed to fetch product data for SKU: ${item['product_id']}');
-        }
-      }
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
 หน้า profile_m.dart  ต้องมีการเพิ่มฟังชั่นการเปลี่ยงแปลงข้อมูล
-และทำการเพิ่มฟังชั่นการเปลี่ยนรหัสผ่าน   โดยมีการเชื่อมกับหน้า edit_profile_m.dart   
+และทำการเพิ่มฟังชั่นการเปลี่ยนรหัสผ่าน   โดยมีการเชื่อมกับหน้า edit_profile_m.dart 
 
+
+ใช้คำสั่งอันนี้ในการเซฟรูปแล้วรูปจะส่งไปยัง path ที่ตั้งไว้
+
+fetch('/upload/image/path', {
+      method: 'POST',
+      body: formData
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.message === "Upload successful") {
+        alert("Profile picture updated successfully!");
+        // อัปเดตภาพโปรไฟล์ใหม่
+        const newImagePath = data.imagePath;
+        document.querySelector(".profile__avatar img").src = newImagePath;
+        localStorage.setItem('profileImage', newImagePath); // เก็บ URL ของภาพโปรไฟล์ใน localStorage
+      } else {
+        alert("Error uploading image: " + data.error);
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred while uploading the image.");
+    });
+  } else {
+    alert("Please select a file and make sure you are logged in.");
+  }
+});
+
+(java)
 ////////////////////////////////////////////////////////////////
 
 
@@ -51,3 +41,6 @@
 
 
 ///////////////////////////////////////////////////////////////
+
+
+เพิ่มการคำนวณ ราคา ในหน้า order_summary_page.dart 

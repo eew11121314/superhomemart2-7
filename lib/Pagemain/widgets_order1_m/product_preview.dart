@@ -11,6 +11,43 @@ class ProductPreview extends StatelessWidget {
     return Uri.tryParse(url)?.hasAbsolutePath ?? false;
   }
 
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            color: Colors.black,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.network(
+                      'http://superhomemart.duckdns.org/upload/PreloaderProduct.jpg',
+                      fit: BoxFit.contain,
+                    );
+                  },
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'ปิด',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat('#,##0.00');
@@ -39,28 +76,31 @@ class ProductPreview extends StatelessWidget {
               padding: const EdgeInsets.all(10.0),
               child: Row(
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(25),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.network(
-                          'http://superhomemart.duckdns.org/upload/PreloaderProduct.jpg',
-                          fit: BoxFit.cover,
-                        );
-                      },
+                  GestureDetector(
+                    onTap: () => _showImageDialog(context, imageUrl),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(25),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.network(
+                            'http://superhomemart.duckdns.org/upload/PreloaderProduct.jpg',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),

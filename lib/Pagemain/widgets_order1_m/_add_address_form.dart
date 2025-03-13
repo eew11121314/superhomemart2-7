@@ -3,11 +3,9 @@ import 'package:flutter/services.dart'; // เพิ่มการนำเข�
 import 'package:flutter_svg/flutter_svg.dart'; // นำเข้า flutter_svg
 import 'package:superhomemart2/json_data_loader.dart'; // นำเข้าคลาส JsonDataLoader
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
-//import 'package:logger/logger.dart'; // นำเข้า logger
 
 class AddressForm extends StatefulWidget {
-  final TextEditingController
-      fullNameController; // เพิ่ม TextEditingController สำหรับชื่อเต็ม
+  final TextEditingController fullNameController;
   final TextEditingController houseNumberController;
   final TextEditingController provinceController;
   final TextEditingController districtController;
@@ -16,17 +14,17 @@ class AddressForm extends StatefulWidget {
   final TextEditingController phoneController;
   final TextEditingController emailController;
   final TextEditingController addressController;
-  final TextEditingController
-      usernameController; // เพิ่ม TextEditingController สำหรับ username
-  final TextEditingController
-      companyController; // เพิ่ม TextEditingController สำหรับบริษัท
-  final TextEditingController
-      taxIdController; // เพิ่ม TextEditingController สำหรับเลขผู้เสียภาษี
+  final TextEditingController usernameController;
+  final TextEditingController companyController;
+  final TextEditingController taxIdController;
+  final TextEditingController shippingCostController;
+  final TextEditingController textAboutController;
+
   final VoidCallback onChangeAddress;
 
   const AddressForm({
     Key? key,
-    required this.fullNameController, // เพิ่ม TextEditingController สำหรับชื่อเต็ม
+    required this.fullNameController,
     required this.houseNumberController,
     required this.provinceController,
     required this.districtController,
@@ -35,9 +33,11 @@ class AddressForm extends StatefulWidget {
     required this.phoneController,
     required this.emailController,
     required this.addressController,
-    required this.usernameController, // เพิ่ม TextEditingController สำหรับ username
-    required this.companyController, // เพิ่ม TextEditingController สำหรับบริษัท
-    required this.taxIdController, // เพิ่ม TextEditingController สำหรับเลขผู้เสียภาษี
+    required this.usernameController,
+    required this.companyController,
+    required this.taxIdController,
+    required this.shippingCostController,
+    required this.textAboutController,
     required this.onChangeAddress,
   }) : super(key: key);
 
@@ -52,7 +52,6 @@ class AddressFormState extends State<AddressForm> {
   List<dynamic> _subDistricts = [];
   final JsonDataLoader _jsonDataLoader = JsonDataLoader();
   String? _username; // ตัวแปรเก็บ username
-  // final Logger _logger = Logger(); // สร้าง instance ของ Logger
 
   @override
   void initState() {
@@ -92,6 +91,10 @@ class AddressFormState extends State<AddressForm> {
       widget.postalCodeController.text = prefs.getString('postalCode') ?? '';
       widget.phoneController.text = prefs.getString('phone') ?? '';
       widget.emailController.text = prefs.getString('email') ?? '';
+      widget.shippingCostController.text =
+          prefs.getString('shippingCost') ?? ''; // โหลดค่าจัดส่งที่บันทึกไว้
+      widget.textAboutController.text = prefs.getString('textAbout') ??
+          ''; // โหลดข้อความเกี่ยวกับที่บันทึกไว้
     });
   }
 
@@ -156,18 +159,6 @@ class AddressFormState extends State<AddressForm> {
       return;
     }
 
-    // Log ข้อมูลที่กรอกมา
-    // _logger.i('Full Name: ${widget.fullNameController.text}');
-    // _logger.i('Company: ${widget.companyController.text}');
-    // _logger.i('Tax ID: ${widget.taxIdController.text}');
-    // _logger.i('House Number: ${widget.houseNumberController.text}');
-    // _logger.i('Province: ${widget.provinceController.text}');
-    // _logger.i('District: ${widget.districtController.text}');
-    // _logger.i('Sub District: ${widget.subDistrictController.text}');
-    // _logger.i('Postal Code: ${widget.postalCodeController.text}');
-    // _logger.i('Phone: ${widget.phoneController.text}');
-    // _logger.i('Email: ${widget.emailController.text}');
-
     // บันทึกข้อมูลที่อยู่ลง SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('fullName', widget.fullNameController.text);
@@ -180,6 +171,10 @@ class AddressFormState extends State<AddressForm> {
     await prefs.setString('postalCode', widget.postalCodeController.text);
     await prefs.setString('phone', widget.phoneController.text);
     await prefs.setString('email', widget.emailController.text);
+    await prefs.setString(
+        'shippingCost', widget.shippingCostController.text); // บันทึกค่าจัดส่ง
+    await prefs.setString(
+        'textAbout', widget.textAboutController.text); // บันทึกข้อความเกี่ยวกับ
 
     // แสดงข้อความสำเร็จและซ่อนฟอร์ม
     ScaffoldMessenger.of(context).showSnackBar(
@@ -386,6 +381,34 @@ class AddressFormState extends State<AddressForm> {
                   decoration: const InputDecoration(
                     labelText: 'รหัสไปรษณีย์',
                     border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Visibility(
+                  visible: false, // ซ่อน TextField สำหรับค่าจัดส่ง
+                  child: TextField(
+                    controller: widget.shippingCostController,
+                    decoration: const InputDecoration(
+                      labelText: 'ค่าจัดส่ง',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType:
+                        TextInputType.number, // กำหนดให้เป็นคีย์บอร์ดตัวเลข
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // อนุญาตเฉพาะตัวเลข
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Visibility(
+                  visible: false, // ซ่อน TextField สำหรับข้อความเกี่ยวกับ
+                  child: TextField(
+                    controller: widget.textAboutController,
+                    decoration: const InputDecoration(
+                      labelText: 'ข้อความเกี่ยวกับ',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
