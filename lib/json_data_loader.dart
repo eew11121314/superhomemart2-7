@@ -1,3 +1,5 @@
+// เอาไว้เลือกจังหวัด อำเภอ ตำบล และรหัสไปรษณีย์จากไฟล์ JSON
+
 // นำเข้าแพ็กเกจที่จำเป็น
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;

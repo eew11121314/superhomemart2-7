@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:superhomemart2/Pagemain/widgets_order1_m/_add_address_form.dart';
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/_add_address_form.dart';
 //import 'package:superhomemart2/Pagemain/widgets_order1_m/address_box.dart';
-import 'package:superhomemart2/Pagemain/widgets_order1_m/payment_options.dart';
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/payment_options.dart';
 //import 'package:superhomemart2/Pagemain/widgets_order1_m/discount_form.dart';
-import 'package:superhomemart2/Pagemain/widgets_order1_m/product_preview.dart';
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/product_preview.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart'; // นำเข้า logger
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า shared_preferences
-import 'package:superhomemart2/Pagemain/widgets_order1_m/accountBank_m.dart'; // นำเข้า accountBank_m.dart
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/accountbank_m.dart'; // นำเข้า accountBank_m.dart
 import 'package:superhomemart2/Pagemain/orderSummary_main/order_summary_page.dart'; // นำเข้า order_summary_page.dart
 
 class OrderPageM extends StatefulWidget {
@@ -187,6 +187,31 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
         }
       }
 
+      // แสดงข้อความสั่งซื้อสำเร็จ
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SvgPicture.asset(
+                'assets/Icon/check.svg',
+                width: 25,
+                height: 25,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 10),
+              const Text('สั่งซื้อสำเร็จ'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(10),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
       // Navigate to Order Summary Page
       Navigator.push(
         context,
@@ -203,6 +228,31 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
             email: _emailController.text,
             paymentMethod: _selectedPaymentMethod,
           ),
+        ),
+      );
+    } else {
+      // แสดงข้อความสั่งซื้อไม่สำเร็จ
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SvgPicture.asset(
+                'assets/Icon/error.svg',
+                width: 25,
+                height: 25,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 10),
+              const Text('การสั่งซื้อยังไม่สำเร็จ'),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(10),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -359,7 +409,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                   child: ElevatedButton(
                     onPressed: _placeOrder,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      backgroundColor: const Color.fromARGB(255, 0, 0, 255),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -372,6 +422,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
                             0.045, // ปรับขนาดตัวอักษรตามขนาดหน้าจอ
                         fontFamily: 'Kanit',
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),

@@ -24,29 +24,75 @@ class ShippingAddressWidget extends StatelessWidget {
     required this.email,
   }) : super(key: key);
 
+  Widget _buildAddressField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontSize: 16,
+              fontFamily: 'Kanit',
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'Kanit',
+                color: Colors.black54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'ที่อยู่จัดส่ง',
-          style: TextStyle(
-            fontSize: 18,
-            fontFamily: 'Kanit',
-            fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text('ชื่อ: $fname $lname'),
-        Text('บ้านเลขที่: $houseNumber'),
-        Text('ตำบล/แขวง: $subDistrict'),
-        Text('อำเภอ/เขต: $district'),
-        Text('จังหวัด: $province'),
-        Text('รหัสไปรษณีย์: $postalCode'),
-        Text('เบอร์โทรศัพท์: $phone'),
-        Text('อีเมล: $email'),
-      ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'ที่อยู่จัดส่ง',
+            style: TextStyle(
+              fontSize: 20,
+              fontFamily: 'Kanit',
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildAddressField('ชื่อ', '$fname $lname'),
+          _buildAddressField('บ้านเลขที่', houseNumber),
+          _buildAddressField('ตำบล/แขวง', subDistrict),
+          _buildAddressField('อำเภอ/เขต', district),
+          _buildAddressField('จังหวัด', province),
+          _buildAddressField('รหัสไปรษณีย์', postalCode),
+          _buildAddressField('เบอร์โทรศัพท์', phone),
+          _buildAddressField('อีเมล', email),
+        ],
+      ),
     );
   }
 }

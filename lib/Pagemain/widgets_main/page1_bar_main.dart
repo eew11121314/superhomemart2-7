@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:superhomemart2/Pagemain/page1_main/page1_m.dart';
-import 'package:superhomemart2/Pagemain/page2_main/page2_m.dart';
-import 'package:superhomemart2/Pagemain/page3_main/page3_m.dart';
+import 'package:superhomemart2/Pagemain/_page1_main/page1_m.dart';
+import 'package:superhomemart2/Pagemain/_page2_main/page2_m.dart';
+import 'package:superhomemart2/Pagemain/_page3_main/page3_m.dart';
 
 class Custom_MBottomNavigationBar extends StatefulWidget {
   const Custom_MBottomNavigationBar({Key? key}) : super(key: key);

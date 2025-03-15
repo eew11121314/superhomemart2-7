@@ -8,6 +8,8 @@ import 'package:superhomemart2/login&register/register.dart';
 import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // Update the import
 import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
 import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
+import 'package:provider/provider.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 
 class LoginPage extends StatefulWidget {
   final bool showBackButton;
@@ -53,7 +55,17 @@ class LoginPageState extends State<LoginPage> {
 
   Future<void> logOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+
+    if (username != null) {
+      // บันทึกข้อมูลตะกร้าสินค้าของผู้ใช้
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      await cartProvider.saveCart(username);
+      cartProvider.clearCart(); // ล้างข้อมูลตะกร้าสินค้า
+    }
+
     await prefs.remove('username'); // ลบชื่อผู้ใช้
+    await prefs.remove('userData'); // ลบข้อมูลผู้ใช้
     await prefs.setBool(
         'isLoggedIn', false); // เปลี่ยนสถานะการเข้าสู่ระบบเป็น false
   }
@@ -61,7 +73,29 @@ class LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    fetchUsers(); // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลผู้ใช้เมื่อเปิดหน้า
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (isLoggedIn) {
+      String? userData = prefs.getString('userData');
+      if (userData != null) {
+        setState(() {
+          users = [json.decode(userData)];
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  const Custom_MBottomNavigationBar()), // ไปยังหน้า Page1BarMain
+        );
+      }
+    } else {
+      fetchUsers(); // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลผู้ใช้เมื่อเปิดหน้า
+    }
   }
 
   // ฟังก์ชันแสดง alert message
@@ -121,9 +155,17 @@ class LoginPageState extends State<LoginPage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('username', username); // เก็บชื่อผู้ใช้
           await prefs.setBool('isLoggedIn', true); // เก็บสถานะการเข้าสู่ระบบ
+          await prefs.setString(
+              'userData', json.encode(user)); // เก็บข้อมูลผู้ใช้
 
-          // แสดงชื่อผู้ใช้บน terminal
+          // โหลดข้อมูลตะกร้าสินค้าของผู้ใช้
+          final cartProvider =
+              Provider.of<CartProvider>(context, listen: false);
+          await cartProvider.loadCart(username);
+
+          // แสดงชื่อผู้ใช้และข้อมูลผู้ใช้บน terminal
           debugPrint("Logged in as: $username");
+          debugPrint("User data: ${json.encode(user)}");
 
           break;
         }
@@ -360,8 +402,7 @@ class LoginPageState extends State<LoginPage> {
                         color: Color(0xFFCFEE80),
                         fontFamily: 'Kanit',
                         fontSize: 20, // เพิ่มขนาดฟอนต์
-                        fontWeight: FontWeight
-                            .bold, // ทำให้ตัวหนังสือหนาขึ้น (เพิ่มหรือไม่ก็ได้)
+                        fontWeight: FontWeight.bold, // ทำให้ตัวหนังสือหนาขึ้น
                       ),
                     ),
                   ),

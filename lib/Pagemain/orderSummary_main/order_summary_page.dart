@@ -1,11 +1,13 @@
-//หน้าสรุปการสั่งซื้อยังไม่ได้ใช้งาน และยังไม่ได้ทำการเชื่อมต่อกับหน้าอื่นๆ
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:superhomemart2/Pagemain/OrderSummary_main/thankyou_page.dart'; // เพิ่มการนำเข้า
 import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/shipping_address_widget.dart'; // เพิ่มการนำเข้า
 import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/payment_method_widget.dart'; // เพิ่มการนำเข้า
 import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/cart_items_widget.dart'; // เพิ่มการนำเข้า
+// import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/transfer_slips_widget.dart'; // เพิ่มการนำเข้า
+import 'package:superhomemart2/Pagemain/pageqrcode_m/pageqrcode_m.dart'; // เพิ่มการนำเข้า
+import 'package:provider/provider.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 
 class OrderSummaryPage extends StatelessWidget {
   final String fname;
@@ -92,12 +94,23 @@ class OrderSummaryPage extends StatelessWidget {
               const SizedBox(height: 20),
               const CartItemsWidget(),
               const SizedBox(height: 20),
+              // const TransferSlipsWidget(), // เพิ่มการอัปโหลดสลิปการโอนเงิน
+              // const SizedBox(height: 20),
+              Center(
+                child: QRCodeWidget(
+                  qrImagePath:
+                      'assets/QRCODE_test1.png', // เส้นทางของรูป QR Code
+                ),
+              ),
+              const SizedBox(height: 20),
               Center(
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
                       // Handle order confirmation logic here
+                      Provider.of<CartProvider>(context, listen: false)
+                          .clearCart();
                       Navigator.push(
                         context,
                         MaterialPageRoute(

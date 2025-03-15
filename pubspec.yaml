@@ -30,6 +30,7 @@ dependencies:
   http_parser: ^4.0.0
   qr_flutter: ^4.0.0
   logger: ^1.0.0
+  
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +90,8 @@ flutter:
     - assets/Icon/eyeon.svg
     - assets/Icon/wrong.svg
     - assets/Icon/arrow.svg
+    - assets/Icon/image_not_supported.svg
+    - assets/Icon/slips.svg
 
     - assets/Icon/lock.svg
     - assets/Icon/username.svg
@@ -131,4 +134,5 @@ flutter:
     - assets/district/3.json
     - assets/district/thai_geographies.json
 
-    - assets/QRCODE_test.png
+    - assets/QRCODE_test1.png
+    - assets/QRCODE_test2.png
