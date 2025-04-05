@@ -10,7 +10,7 @@ class DraggableCartIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 100, // ระยะจากขอบล่าง
+      bottom: 20, // ระยะจากขอบล่าง
       right: 10, // ระยะจากขอบขวา
       child: GestureDetector(
         onTap: () {

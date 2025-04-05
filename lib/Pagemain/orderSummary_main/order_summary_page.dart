@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:superhomemart2/Pagemain/OrderSummary_main/thankyou_page.dart'; // เพิ่มการนำเข้า
 import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/shipping_address_widget.dart'; // เพิ่มการนำเข้า
 import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/payment_method_widget.dart'; // เพิ่มการนำเข้า
-import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/cart_items_widget.dart'; // เพิ่มการนำเข้า
-// import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/transfer_slips_widget.dart'; // เพิ่มการนำเข้า
-import 'package:superhomemart2/Pagemain/pageqrcode_m/pageqrcode_m.dart'; // เพิ่มการนำเข้า
-import 'package:provider/provider.dart';
-import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/orderSummary_main/widgets_orderSum/cart_items_widget.dart'; // ตระกร้าสินค้า
+import 'package:superhomemart2/Pagemain/transferslips_main/transfer_slips_m.dart'; // เพิ่มการนำเข้า
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/accountbank_m.dart'; // เพิ่มการนำเข้า
 
 class OrderSummaryPage extends StatelessWidget {
   final String fname;
@@ -20,6 +17,8 @@ class OrderSummaryPage extends StatelessWidget {
   final String phone;
   final String email;
   final String paymentMethod;
+  final String orderId; // เพิ่มตัวแปร orderId
+  final double totalAmount; // เพิ่มตัวแปร totalAmount
 
   const OrderSummaryPage({
     Key? key,
@@ -33,6 +32,8 @@ class OrderSummaryPage extends StatelessWidget {
     required this.phone,
     required this.email,
     required this.paymentMethod,
+    required this.orderId, // เพิ่มตัวแปร orderId
+    required this.totalAmount, // เพิ่มตัวแปร totalAmount
   }) : super(key: key);
 
   @override
@@ -94,27 +95,50 @@ class OrderSummaryPage extends StatelessWidget {
               const SizedBox(height: 20),
               const CartItemsWidget(),
               const SizedBox(height: 20),
-              // const TransferSlipsWidget(), // เพิ่มการอัปโหลดสลิปการโอนเงิน
-              // const SizedBox(height: 20),
               Center(
-                child: QRCodeWidget(
-                  qrImagePath:
-                      'assets/QRCODE_test1.png', // เส้นทางของรูป QR Code
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    'เลขคำสั่งซื้อ: $orderId', // แสดงเลขคำสั่งซื้อ
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kanit',
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(height: 20),
+              AccountBank(), // ลบ const ออกจาก AccountBank widget
               const SizedBox(height: 20),
               Center(
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle order confirmation logic here
-                      Provider.of<CartProvider>(context, listen: false)
-                          .clearCart();
+                      // Navigate to TransferSlipsPage with data
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ThankYouPage(),
+                          builder: (context) => TransferSlipsPage(
+                            name: fname,
+                            email: email,
+                            orderNumber: orderId,
+                            amount: totalAmount, // ส่ง totalAmount ไปด้วย
+                          ),
                         ),
                       );
                     },

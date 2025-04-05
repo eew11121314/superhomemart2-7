@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:intl/intl.dart';
 
@@ -51,6 +52,7 @@ class ProductPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat('#,##0.00');
+    final cartProvider = Provider.of<CartProvider>(context);
     double totalPrice =
         cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
 
@@ -121,6 +123,26 @@ class ProductPreview extends StatelessWidget {
                         Text('จำนวน: ${item.quantity}'),
                       ],
                     ),
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () {
+                          cartProvider.addItem(item);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.remove),
+                        onPressed: () {
+                          final index = cartProvider.items
+                              .indexWhere((i) => i.productId == item.productId);
+                          if (index >= 0) {
+                            cartProvider.decreaseQuantity(index);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

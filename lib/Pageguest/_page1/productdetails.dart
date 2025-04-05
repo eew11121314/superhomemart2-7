@@ -20,6 +20,7 @@ class ProductDetails extends StatefulWidget {
   final double sh_length;
   final double sh_width;
   final double sh_height;
+  final String category_1;
 
   const ProductDetails({
     super.key,
@@ -40,6 +41,7 @@ class ProductDetails extends StatefulWidget {
     required this.sh_length,
     required this.sh_width,
     required this.sh_height,
+    required this.category_1,
   });
 
   @override
@@ -129,6 +131,19 @@ class _ProductDetailsState extends State<ProductDetails> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Visibility(
+                  visible: widget
+                      .category_1.isNotEmpty, // ซ่อนถ้า category_1 เป็นค่าว่าง
+                  child: Text(
+                    ': ${widget.category_1}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kanit',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 if (validPhotos.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.all(16.0),

@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/accountbank_m.dart'; // เพิ่มการนำเข้า
-import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_slipsupload_widget.dart'; // นำเข้า TransferSlipsWidget
-import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_datetime_widget.dart'; // นำเข้า TransferDateTimePicker
-import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_from_widget.dart'; // นำเข้า TransferSlipsFormFields
+import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/accountbank_m.dart';
+import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_datetime_widget.dart';
+import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_from_widget.dart';
+import 'package:superhomemart2/Pagemain/transferslips_main/widgets_slips/transfer_slipsupload_widget.dart'; // เพิ่มการนำเข้า
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:provider/provider.dart';
+import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
+import 'package:superhomemart2/Pagemain/_page1_main/page1_m.dart';
 
 class TransferSlipsPage extends StatefulWidget {
-  const TransferSlipsPage({Key? key}) : super(key: key);
+  final String name;
+  final String email;
+  final String orderNumber;
+  final double amount;
+
+  const TransferSlipsPage({
+    Key? key,
+    required this.name,
+    required this.email,
+    required this.orderNumber,
+    required this.amount,
+  }) : super(key: key);
 
   @override
   _TransferSlipsPageState createState() => _TransferSlipsPageState();
@@ -18,6 +34,22 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
   final TextEditingController _orderNumberController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   DateTime? _transferDate;
+  File? _slipFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.name;
+    _emailController.text = widget.email;
+    _orderNumberController.text = widget.orderNumber;
+    _amountController.text = widget.amount.toString();
+  }
+
+  void _onImageSelected(File? image) {
+    setState(() {
+      _slipFile = image;
+    });
+  }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -27,11 +59,48 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
         );
         return;
       }
-      // ส่งข้อมูลไปยังเซิร์ฟเวอร์หรือทำการประมวลผลอื่น ๆ
-      // ...
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ส่งข้อมูลเรียบร้อยแล้ว')),
-      );
+
+      if (_slipFile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณาแนบไฟล์สลิปโอนเงิน')),
+        );
+        return;
+      }
+
+      try {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('https://superhomemart.duckdns.org/api/upload_slip'),
+        );
+        request.files
+            .add(await http.MultipartFile.fromPath('slip', _slipFile!.path));
+        request.fields['name'] = _nameController.text;
+        request.fields['email'] = _emailController.text;
+        request.fields['order_number'] = _orderNumberController.text;
+        request.fields['datetime'] = _transferDate!.toIso8601String();
+        request.fields['amount'] = _amountController.text;
+
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          Provider.of<CartProvider>(context, listen: false).clearCart();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ส่งข้อมูลเรียบร้อยแล้ว')),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Page1M()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('เกิดข้อผิดพลาดในการส่งข้อมูล')),
+          );
+        }
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('เกิดข้อผิดพลาดในการส่งข้อมูล')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบถ้วน')),
@@ -43,13 +112,13 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80.0), // ปรับความสูงของ AppBar
+        preferredSize: const Size.fromHeight(80.0),
         child: AppBar(
           title: const Text(
             'ส่งสลิปโอนเงิน',
             style: TextStyle(
               fontFamily: 'Kanit',
-              fontSize: 24.0, // ปรับขนาดตัวอักษร
+              fontSize: 24.0,
             ),
           ),
           centerTitle: true,
@@ -63,7 +132,7 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AccountBank(), // ลบ const ออก
+                AccountBank(),
                 const SizedBox(height: 20),
                 TransferSlipsFormFields(
                   nameController: _nameController,
@@ -81,7 +150,9 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const TransferSlipsWidget(), // ใช้ TransferSlipsWidget แทน
+                TransferSlipsUploadWidget(
+                  onImageSelected: _onImageSelected,
+                ),
                 const SizedBox(height: 16),
                 Center(
                   child: ElevatedButton(
@@ -97,19 +168,47 @@ class _TransferSlipsPageState extends State<TransferSlipsPage> {
                         fontSize: 18,
                         fontFamily: 'Kanit',
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(1.0, 1.0),
-                            blurRadius: 2.0,
-                            color: Colors.grey,
-                          ),
-                        ],
+                        // shadows: [
+                        //   Shadow(
+                        //     offset: Offset(1.0, 1.0),
+                        //     blurRadius: 2.0,
+                        //     color: Colors.grey,
+                        //   ),
+                        // ],
                       ),
                     ),
                     child: const Text(
                       'ส่งข้อมูล',
                       style: TextStyle(
                         color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Page1M()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'ดำเนินการสำเร็จ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'Kanit',
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

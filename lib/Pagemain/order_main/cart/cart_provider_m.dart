@@ -57,8 +57,16 @@ class CartProvider with ChangeNotifier {
 
   // เพิ่มสินค้าลงในตะกร้า
   void addItem(CartItem item) {
-    _items.add(item);
-    _cartItems.add(item);
+    final existingItemIndex =
+        _items.indexWhere((i) => i.productId == item.productId);
+
+    if (existingItemIndex >= 0) {
+      _items[existingItemIndex].quantity += 1;
+    } else {
+      _items.add(item);
+      _cartItems.add(item);
+    }
+
     notifyListeners();
   }
 
@@ -79,8 +87,10 @@ class CartProvider with ChangeNotifier {
   void decreaseQuantity(int index) {
     if (_items[index].quantity > 1) {
       _items[index].quantity--;
-      notifyListeners();
+    } else {
+      removeItem(index);
     }
+    notifyListeners();
   }
 
   // ลบสินค้าทั้งหมดจากตะกร้า

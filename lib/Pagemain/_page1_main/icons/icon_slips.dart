@@ -8,7 +8,7 @@ class SlipsIcon extends StatelessWidget {
 
   const SlipsIcon({
     super.key,
-    this.bottomOffset = 180, // Default position
+    this.bottomOffset = 100, // Default position
     this.rightOffset = 10, // Default position
   });
 
@@ -22,7 +22,12 @@ class SlipsIcon extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const TransferSlipsPage(), // ไปหน้า Page2
+              builder: (context) => const TransferSlipsPage(
+                name: '', // ส่งข้อมูลที่เป็นช่องว่างไปด้วย
+                email: '',
+                orderNumber: '',
+                amount: 0.0, // ตัวอย่างจำนวนเงินเป็น 0.0
+              ),
             ),
           );
         },
@@ -35,7 +40,7 @@ class SlipsIcon extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 color: const Color.fromARGB(255, 47, 69, 92)
-                    .withValues(alpha: 0.9), // ใช้ withValues() แทน withOpacity
+                    .withOpacity(0.9), // ใช้ withOpacity() แทน withValues
                 borderRadius: BorderRadius.circular(10), // ขอบมน
               ),
             ),

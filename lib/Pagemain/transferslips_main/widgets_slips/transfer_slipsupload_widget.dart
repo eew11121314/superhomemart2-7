@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
 
-class TransferSlipsWidget extends StatefulWidget {
-  const TransferSlipsWidget({Key? key}) : super(key: key);
+class TransferSlipsUploadWidget extends StatefulWidget {
+  final Function(File?) onImageSelected; // Callback เมื่อเลือกภาพ
+
+  const TransferSlipsUploadWidget({Key? key, required this.onImageSelected})
+      : super(key: key);
 
   @override
-  _TransferSlipsWidgetState createState() => _TransferSlipsWidgetState();
+  _TransferSlipsUploadWidgetState createState() =>
+      _TransferSlipsUploadWidgetState();
 }
 
-class _TransferSlipsWidgetState extends State<TransferSlipsWidget> {
+class _TransferSlipsUploadWidgetState extends State<TransferSlipsUploadWidget> {
   File? _image;
 
   Future<void> _pickImage() async {
@@ -21,6 +24,7 @@ class _TransferSlipsWidgetState extends State<TransferSlipsWidget> {
       setState(() {
         _image = File(pickedFile.path);
       });
+      widget.onImageSelected(_image); // ส่งภาพกลับไปยัง parent widget
     }
   }
 
@@ -38,8 +42,10 @@ class _TransferSlipsWidgetState extends State<TransferSlipsWidget> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child:
-                      const Text('ปิด', style: TextStyle(fontFamily: 'Kanit')),
+                  child: const Text(
+                    'ปิด',
+                    style: TextStyle(fontFamily: 'Kanit'),
+                  ),
                 ),
               ],
             ),
@@ -86,10 +92,9 @@ class _TransferSlipsWidgetState extends State<TransferSlipsWidget> {
             child: _image == null
                 ? Column(
                     children: [
-                      SvgPicture.asset(
-                        'assets/Icon/image_not_supported.svg',
-                        height: 100,
-                        width: 100,
+                      Icon(
+                        Icons.image_not_supported,
+                        size: 100,
                         color: Colors.grey[400],
                       ),
                       const SizedBox(height: 10),

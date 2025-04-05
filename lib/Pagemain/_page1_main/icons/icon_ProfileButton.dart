@@ -12,7 +12,7 @@ class ProfileIconButton extends StatelessWidget {
         'assets/Icon/person.svg', // ใช้ SVG แทนไอคอนรูปคน
         width: 50,
         height: 50,
-        color: const Color.fromARGB(255, 57, 55, 55),
+        // color: const Color.fromARGB(255, 57, 55, 55),
       ),
       onPressed: () {
         Navigator.push(

@@ -1,0 +1,112 @@
+tools ของ flutter ว่าทำงานยังไงบ้าง
+
+1. MaterialApp
+-ใช้สำหรับกำหนดโครงสร้างหลักของแอปพลิเคชัน เช่น ธีม, เส้นทาง (routes), และหน้าหลัก (home) ของแอป
+-ปรับได้:
+-เปลี่ยน theme เพื่อปรับแต่งสี, ฟอนต์, และสไตล์ของแอป
+-เพิ่มเส้นทาง (routes) ใหม่ใน routes เช่น:
+'/profile': (context) => const ProfilePage(),
+
+2. FutureBuilder
+-ใช้สำหรับรอผลลัพธ์จาก Future (เช่น การตรวจสอบสถานะการล็อกอิน)
+-ปรับได้:
+-เพิ่ม UI ระหว่างรอโหลดข้อมูล เช่น แสดงข้อความหรือภาพเคลื่อนไหวแทน CircularProgressIndicator
+-ตัวอย่าง:
+if (snapshot.connectionState == ConnectionState.waiting) {
+  return Center(child: Text('Loading...'));
+}
+
+3. Scaffold
+-ใช้สำหรับสร้างโครงสร้างหน้าจอ เช่น AppBar, Body, และ BottomNavigationBar
+-ปรับได้:
+-เพิ่ม AppBar เพื่อแสดงหัวข้อของหน้า
+-เพิ่ม FloatingActionButton สำหรับการกระทำพิเศษ เช่น
+floatingActionButton: FloatingActionButton(
+  onPressed: () => print('Button Pressed'),
+  child: Icon(Icons.add),
+),
+
+4. IndexedStack
+ใช้สำหรับจัดการการแสดงผลหลายหน้าในรูปแบบ stack โดยแสดงเฉพาะหน้าที่เลือก
+ปรับได้:
+เพิ่มหน้าใหม่ใน _pages เช่น:
+const SettingsPage(),
+
+5. CustomBottomNavigationBar
+เป็น Widget ที่กำหนดเองสำหรับแถบเมนูด้านล่าง
+ปรับได้:
+เพิ่มไอคอนหรือเปลี่ยนสไตล์ เช่น:
+BottomNavigationBarItem(
+  icon: Icon(Icons.settings),
+  label: 'Settings',
+),
+
+6. MultiProvider
+ใช้สำหรับจัดการ state ด้วย Provider ซึ่งช่วยให้สามารถแชร์ข้อมูลระหว่าง Widget ได้
+ปรับได้:
+เพิ่ม Provider ใหม่สำหรับจัดการข้อมูลอื่น เช่น
+ChangeNotifierProvider(create: (_) => UserProvider()),
+
+7. SharedPreferences
+ใช้สำหรับจัดเก็บข้อมูลแบบถาวร เช่น สถานะการล็อกอิน
+ปรับได้:
+เพิ่มการจัดเก็บข้อมูลอื่น เช่น:
+prefs.setString('theme', 'dark');
+
+8. window_manager
+ใช้สำหรับจัดการขนาดหน้าต่างในระบบ Desktop
+ปรับได้:
+เปลี่ยนขนาดหน้าต่างเริ่มต้น:
+await windowManager.setSize(const Size(800, 600));
+
+9. Logger
+ใช้สำหรับแสดง log ใน terminal เพื่อช่วย debug
+ปรับได้:
+เพิ่มระดับ log เช่น logger.w('Warning message');
+double buttonWidth = MediaQuery.of(context).size.width * 0.8;
+
+10. MediaQuery
+ใช้สำหรับดึงข้อมูลเกี่ยวกับหน้าจอ เช่น ขนาดหน้าจอ
+ปรับได้:
+ใช้ปรับขนาด UI ให้เหมาะสมกับหน้าจอ เช่น:
+double buttonWidth = MediaQuery.of(context).size.width * 0.8;
+
+///////////////////////////////////////////////////////////
+การปรับปรุงเพิ่มเติม:
+เพิ่ม Dark Mode:
+
+1. เพิ่มธีมสำหรับ Dark Mode ใน MaterialApp:
+theme: ThemeData.light(),
+darkTheme: ThemeData.dark(),
+themeMode: ThemeMode.system, // ใช้ตามระบบ
+
+
+2.เพิ่มระบบผู้ใช้หลายคน:
+ใช้ SharedPreferences เก็บข้อมูลผู้ใช้หลายคน เช่น
+prefs.setStringList('users', ['user1', 'user2']);
+
+3. เพิ่มการแจ้งเตือน (Notifications):
+ใช้แพ็กเกจ flutter_local_notifications เพื่อแสดงการแจ้งเตือน
+
+4. เพิ่มการโหลดข้อมูลจาก API:
+ใช้ http เพื่อดึงข้อมูลจากเซิร์ฟเวอร์และแสดงในหน้า
+
+5. เพิ่มการทดสอบ (Testing):
+ใช้ flutter_test เพื่อเขียน unit test และ widget test
+
+
+//////////////////////////////////////////////
+1. StatelessWidget
+*ลักษณะ: เป็น Widget ที่ไม่มีสถานะ (state) เปลี่ยนแปลงได้
+*เหมาะสำหรับ:
+- UI ที่ไม่เปลี่ยนแปลงหลังจากสร้างขึ้น เช่น ปุ่ม, ข้อความ, หรือ Layout คงที่
+- การแสดงผลที่ขึ้นอยู่กับค่าคงที่หรือค่าที่ส่งผ่านเข้ามา (props)
+
+2. StatefulWidget
+*ลักษณะ: เป็น Widget ที่มีสถานะ (state) เปลี่ยนแปลงได้
+*เหมาะสำหรับ:
+-UI ที่ต้องเปลี่ยนแปลงตามการกระทำของผู้ใช้ เช่น การกดปุ่ม, การเลื่อนหน้า, หรือ-การเปลี่ยนค่าในแอป
+- การจัดการสถานะที่เปลี่ยนแปลง เช่น ตัวนับ (counter), การเลือกเมนู, หรือการโหลดข้อมูล
+
+/////////////////////////////////////////////////////
+

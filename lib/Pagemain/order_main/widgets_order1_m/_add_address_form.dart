@@ -59,6 +59,7 @@ class AddressFormState extends State<AddressForm> {
     _loadJsonData();
     _loadUsername(); // โหลด username จาก SharedPreferences
     _loadSavedAddress(); // โหลดข้อมูลที่อยู่ที่บันทึกไว้
+    _setDefaultShippingCost(); // ตั้งค่าเริ่มต้นให้ shippingCostController เป็น 0
   }
 
   Future<void> _loadJsonData() async {
@@ -101,11 +102,18 @@ class AddressFormState extends State<AddressForm> {
         widget.emailController.text = prefs.getString('email_$_username') ?? '';
         widget.shippingCostController.text =
             prefs.getString('shippingCost_$_username') ??
-                ''; // โหลดค่าจัดส่งที่บันทึกไว้
+                '0'; // โหลดค่าจัดส่งที่บันทึกไว้ หรือ 0 ถ้าไม่มี
         widget.textAboutController.text =
             prefs.getString('textAbout_$_username') ??
                 ''; // โหลดข้อความเกี่ยวกับที่บันทึกไว้
       });
+    }
+  }
+
+  void _setDefaultShippingCost() {
+    if (widget.shippingCostController.text.isEmpty ||
+        widget.shippingCostController.text == ' ') {
+      widget.shippingCostController.text = '0';
     }
   }
 

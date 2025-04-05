@@ -30,12 +30,12 @@ dependencies:
   http_parser: ^4.0.0
   qr_flutter: ^4.0.0
   logger: ^1.0.0
-  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -61,20 +61,12 @@ flutter:
     - assets/banner8.jpg
     - assets/banner9.jpg
     - assets/banner10.jpg
-    - assets/10.10 Shopee.jpg
-    - assets/LAZADA 10.10 KOSANALAND.jpg
-    - assets/LAZADA 10.10 SUPER.jpg
-
     - assets/brand/DECAKILA@2x.png
     - assets/brand/JADEVER@2x.png
     - assets/brand/TOTAL@2x.png
     - assets/brand/RICOTA_O.png
-
     - assets/Scooter Courier.gif
-    
-    - assets/default_user.jpg
     - assets/Map-01-01.jpg
-
     - assets/Icon/cart.svg
     - assets/Icon/shopping-cart.svg
     - assets/Icon/shopping-bag.svg
@@ -92,12 +84,10 @@ flutter:
     - assets/Icon/arrow.svg
     - assets/Icon/image_not_supported.svg
     - assets/Icon/slips.svg
-
     - assets/Icon/lock.svg
     - assets/Icon/username.svg
     - assets/Icon/username2.svg
     - assets/Icon/person.svg
-
     - assets/Icon/youtube.svg
     - assets/Icon/tiktok.svg
     - assets/Icon/line.svg
@@ -107,13 +97,10 @@ flutter:
     - assets/Icon/phone.svg
     - assets/Icon/phone2.svg
     - assets/Icon/location.svg
-
     - assets/Icon/add-c.svg
     - assets/Icon/add-camera.svg
-
     - assets/Icon/chat.svg
     - assets/Icon/company.svg
-
     - assets/Icon/plus.svg
     - assets/Icon/minus.svg
     - assets/Icon/arrow-bottom.svg
@@ -121,18 +108,20 @@ flutter:
     - assets/Icon/arrow_forward.svg
     - assets/Icon/list.svg
     - assets/Icon/grid.svg
-
     - assets/Icon/email.svg
     - assets/Icon/one.svg
     - assets/Icon/check.svg
     - assets/Icon/bin.svg
     - assets/Icon/edit.svg
     - assets/Icon/build.svg
-
     - assets/district/1.json
     - assets/district/2.json
     - assets/district/3.json
     - assets/district/thai_geographies.json
-
     - assets/QRCODE_test1.png
     - assets/QRCODE_test2.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/ICONAPP/app_icon.png"

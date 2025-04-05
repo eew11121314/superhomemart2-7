@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // นำเข้า flutter_svg
-import 'package:flutter/services.dart'; // นำเข้า input formatter
+import 'package:flutter_svg/flutter_svg.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String field;
@@ -22,31 +21,15 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _controller;
   bool _isLoading = false;
-
-  // ตัวแปรสำหรับควบคุมการแสดงผลของฟิลด์
-  bool _showPhoneField = false;
-  bool _showEmailField = false;
-  bool _showAddressField = false;
-
-  // ตัวแปรสำหรับตรวจสอบกรอบที่ผิด
   bool _isFieldValid = true;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.value);
-
-    // กำหนดการแสดงผลของฟิลด์ตามค่า field
-    if (widget.field == 'number') {
-      _showPhoneField = true;
-    } else if (widget.field == 'email') {
-      _showEmailField = true;
-    } else if (widget.field == 'address') {
-      _showAddressField = true;
-    }
   }
 
-  // ฟังก์ชันแสดง alert message
+  // ฟังก์ชันแสดง Alert
   void _showAlert(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -60,7 +43,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color: Colors.red,
                 width: 50,
                 height: 50,
-              ), // ใช้ SVG แทนไอคอน
+              ),
               const SizedBox(height: 10),
               Text(
                 message,
@@ -85,66 +68,86 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Future<void> _updateDatabase(String field, String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    String? username = prefs.getString('username');
-
-    if (username == null) {
-      debugPrint('No username found');
-      return;
-    }
-
+  // ฟังก์ชันอัปเดตข้อมูลไปยัง API
+  Future<void> _updateDatabase(Map<String, String> fields) async {
     final String url =
         "https://superhomemart.duckdns.org/api/upload/user/member/app";
     const String apiKey = "WHt)m6gpqxkF1r(oDczv8mq%";
 
     try {
-      final response = await http.post(
+      final response = await http.put(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
         },
-        body: jsonEncode({
-          'username': username,
-          field: value,
-        }),
+        body: jsonEncode(fields), // ส่งข้อมูลในรูปแบบ JSON
       );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         if (jsonData['status'] == 'success') {
-          debugPrint('Database updated successfully');
+          _showAlert(context, 'อัปเดตข้อมูลสำเร็จ');
+        } else if (jsonData['status'] == 'not_found') {
+          _showAlert(context, 'ไม่พบข้อมูลที่ต้องการแก้ไข');
         } else {
-          debugPrint('Failed to update database: ${jsonData['message']}');
+          _showAlert(context, 'อัปเดตข้อมูลล้มเหลว: ${jsonData['message']}');
         }
       } else {
-        debugPrint('Failed to update database: ${response.statusCode}');
+        _showAlert(context, 'เกิดข้อผิดพลาด: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Error updating database: $e');
+      _showAlert(context, 'เกิดข้อผิดพลาด: $e');
     }
   }
 
+  // ฟังก์ชันบันทึกข้อมูล
   Future<void> _saveChanges() async {
     setState(() {
       _isLoading = true;
     });
 
-    // ตรวจสอบข้อมูลที่กรอกในแต่ละช่อง
-    setState(() {
-      _isFieldValid = _controller.text.isNotEmpty;
-    });
+    // ตรวจสอบว่าฟิลด์ไม่ว่างเปล่า
+    _isFieldValid = _controller.text.isNotEmpty;
 
     if (!_isFieldValid) {
-      _showAlert(context, 'กรุณาเติมให้ครบทุกช่อง');
+      _showAlert(context, 'กรุณากรอกข้อมูลให้ครบถ้วน');
       setState(() {
         _isLoading = false;
       });
       return;
     }
 
-    await _updateDatabase(widget.field, _controller.text);
+    // ดึงข้อมูลจาก SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    String? id = prefs.getString('id'); // ใช้ id เป็นตัวระบุหลัก
+    String? number = prefs.getString('number');
+    String? email = prefs.getString('email');
+    String? address = prefs.getString('address');
+
+    if (id == null) {
+      _showAlert(context, 'ไม่พบข้อมูลผู้ใช้');
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // สร้าง Map สำหรับส่งข้อมูลไปยัง API
+    Map<String, String> fields = {
+      'id': id, // ใช้ id เป็นตัวระบุหลัก
+      'fname': 'ชื่อใหม่', // ตัวอย่างข้อมูล
+      'lname': 'นามสกุลใหม่', // ตัวอย่างข้อมูล
+      'number': number ?? '',
+      'email': email ?? '',
+      'address': address ?? '',
+      widget.field: _controller.text, // ฟิลด์ที่แก้ไข
+    };
+
+    await _updateDatabase(fields);
 
     setState(() {
       _isLoading = false;
@@ -156,15 +159,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit ${widget.field}'),
-        automaticallyImplyLeading: false, // ซ่อนปุ่มย้อนกลับ
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: SvgPicture.asset(
-            'assets/Icon/left.svg', // ไฟล์ SVG สำหรับลูกศร
+            'assets/Icon/left.svg',
             width: 24,
             height: 24,
           ),
           onPressed: () {
-            Navigator.pop(context); // การทำงานของปุ่มย้อนกลับ
+            Navigator.pop(context);
           },
         ),
       ),
@@ -172,52 +175,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Visibility(
-              visible: _showPhoneField,
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: _isFieldValid
-                      ? Colors.white.withAlpha((0.8 * 255).toInt())
-                      : Colors.red.withAlpha((0.3 * 255).toInt()),
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly, // แค่ตัวเลข
-                  LengthLimitingTextInputFormatter(10), // จำกัด 10 ตัว
-                ],
-              ),
-            ),
-            Visibility(
-              visible: _showEmailField,
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: _isFieldValid
-                      ? Colors.white.withAlpha((0.8 * 255).toInt())
-                      : Colors.red.withAlpha((0.3 * 255).toInt()),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ),
-            Visibility(
-              visible: _showAddressField,
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: _isFieldValid
-                      ? Colors.white.withAlpha((0.8 * 255).toInt())
-                      : Colors.red.withAlpha((0.3 * 255).toInt()),
-                ),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: widget.field,
+                border: const OutlineInputBorder(),
+                filled: true,
+                fillColor:
+                    _isFieldValid ? Colors.white : Colors.red.withOpacity(0.3),
               ),
             ),
             const SizedBox(height: 20),

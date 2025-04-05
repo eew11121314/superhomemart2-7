@@ -4,10 +4,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'productdetails.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/decakila_g.dart';
-import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/jadever_g.dart';
-import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/total_g.dart';
-import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/ricota_g.dart';
+// import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/decakila_g.dart';
+// import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/jadever_g.dart';
+// import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/total_g.dart';
+// import 'package:superhomemart2/Pageguest/_page2/productbrand_guest/ricota_g.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../search_widget.dart'; // Import the search widget
 import 'package:shimmer/shimmer.dart';
@@ -54,7 +54,6 @@ class _Page1State extends State<Page1> {
   }
 
   // ตัวแปรสำหรับความสูงสูงสุดและความสูงปัจจุบัน
-  double _currentHeight = 2870;
 
   Future<void> fetchUsers() async {
     const String url = "http://superhomemart.duckdns.org/product";
@@ -108,14 +107,21 @@ class _Page1State extends State<Page1> {
     });
 
     Future.delayed(const Duration(milliseconds: 400), () {
+      List<dynamic> sourceList = searchQuery.isEmpty
+          ? products // ถ้าไม่มีคำค้นหา ให้ใช้สินค้าทั้งหมด
+          : products.where((product) {
+              final productName = product["name"]?.toLowerCase() ?? '';
+              return productName.contains(searchQuery.toLowerCase());
+            }).toList(); // กรองสินค้าตามคำค้นหา
+
       int startIndex = _currentPageIndex * _itemsPerPage;
       int endIndex = startIndex + _itemsPerPage;
-      if (endIndex > products.length) {
-        endIndex = products.length;
+      if (endIndex > sourceList.length) {
+        endIndex = sourceList.length;
       }
 
       setState(() {
-        displayedProducts = products.getRange(startIndex, endIndex).toList();
+        displayedProducts = sourceList.getRange(startIndex, endIndex).toList();
         _isLoading = false; // ตั้งค่าสถานะการโหลดเป็น false หลังจากโหลดเสร็จ
       });
     });
@@ -124,7 +130,7 @@ class _Page1State extends State<Page1> {
   void _changePage(int pageIndex) {
     setState(() {
       _currentPageIndex = pageIndex;
-      _loadMoreProducts();
+      _loadMoreProducts(); // โหลดสินค้าสำหรับหน้าปัจจุบัน
     });
   }
 
@@ -174,14 +180,47 @@ class _Page1State extends State<Page1> {
   }
 
   final List<String> _adImages = [
-    'assets/10.10 Shopee.jpg',
-    'assets/LAZADA 10.10 KOSANALAND.jpg',
-    'assets/LAZADA 10.10 SUPER.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro1.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro2.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro3.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro4.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro5.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro6.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro7.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro8.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro9.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro10.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro11.jpg',
+    'http://superhomemart.duckdns.org/EIWtest/picpro/picpro12.jpg',
   ];
+
+  Future<List<String>> filterValidImages(List<String> images) async {
+    List<String> validImages = [];
+    for (String imageUrl in images) {
+      try {
+        final response = await http.head(Uri.parse(imageUrl));
+        if (response.statusCode == 200) {
+          validImages.add(imageUrl); // เพิ่มเฉพาะรูปที่โหลดได้สำเร็จ
+        }
+      } catch (e) {
+        debugPrint(
+            'Error loading image: $imageUrl'); // แสดงข้อผิดพลาดใน debug console
+      }
+    }
+    return validImages;
+  }
 
   @override
   void initState() {
     super.initState();
+
+    filterValidImages(_adImages).then((validImages) {
+      setState(() {
+        _adImages.clear();
+        _adImages.addAll(validImages); // อัปเดต _adImages ด้วยรูปที่โหลดได้
+      });
+    });
+
     Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_currentPage < _adImages.length - 1) {
         _currentPage++;
@@ -284,6 +323,7 @@ class _Page1State extends State<Page1> {
           sh_length: shLength,
           sh_width: shWidth,
           sh_height: shHeight,
+          category_1: product["category_1"] ?? "No category available",
         ),
       ),
     );
@@ -292,76 +332,88 @@ class _Page1State extends State<Page1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: _isSearching
-            ? SearchWidget(
-                onSearch: (value) {
-                  _searchProducts(value);
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(MediaQuery.of(context).size.height *
+            0.075), // ปรับความสูงของ AppBar
+        child: AppBar(
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          title: _isSearching
+              ? SearchWidget(
+                  onSearch: (value) {
+                    _searchProducts(value);
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                  onCancel: () {
+                    setState(() {
+                      _isSearching = false;
+                      searchQuery = "";
+                      displayedProducts = List.from(products);
+                    });
+                  },
+                )
+              : GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isSearching = true;
+                    });
+                  },
+                  child: const Text(
+                    'ค้นหาสินค้า',
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Color.fromARGB(136, 0, 0, 0),
+                        fontFamily: 'Kanit'),
+                  ),
+                ),
+          actions: [
+            if (_isSearching)
+              IconButton(
+                icon: SvgPicture.asset('assets/Icon/x.svg',
+                    width: 24, height: 24), // ใช้ SVG แทนไอคอน
+                onPressed: () {
                   setState(() {
-                    searchQuery = value;
-                  });
-                },
-                onCancel: () {
-                  setState(() {
-                    _isSearching = false;
-                    searchQuery = "";
+                    _isSearching = false; // ปิดโหมดค้นหา
+                    searchQuery = ""; // ล้างคำค้น
                     displayedProducts = List.from(products);
                   });
                 },
-              )
-            : GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isSearching = true;
-                  });
-                },
-                child: const Text(
-                  'ค้นหาสินค้า',
-                  style: TextStyle(color: Colors.grey, fontFamily: 'Kanit'),
-                ),
               ),
-        actions: [
-          if (_isSearching)
-            IconButton(
-              icon: SvgPicture.asset('assets/Icon/x.svg',
-                  width: 24, height: 24), // ใช้ SVG แทนไอคอน
-              onPressed: () {
-                setState(() {
-                  _isSearching = false; // ปิดโหมดค้นหา
-                  searchQuery = ""; // ล้างคำค้น
-                  displayedProducts = List.from(products);
-                });
-              },
-            ),
-        ],
+          ],
+        ),
       ),
+      backgroundColor: const Color.fromARGB(255, 239, 240, 244),
       body: Stack(
         children: [
           SingleChildScrollView(
             controller: _scrollController,
             child: Column(
               children: [
-                AspectRatio(
-                  aspectRatio: 16 / 5,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: _adImages.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(_adImages[index]),
-                              fit: BoxFit.cover,
+                // ซ่อน PageView.builder หากไม่มีรูปภาพใน _adImages
+                if (_adImages.isNotEmpty)
+                  AspectRatio(
+                    aspectRatio: 16 / 9, // รักษาสัดส่วน 16:9
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: _adImages.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                              image: DecorationImage(
+                                image: NetworkImage(_adImages[index]),
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
                 _isLoading
                     ? Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
@@ -421,62 +473,56 @@ class _Page1State extends State<Page1> {
                                       'http://superhomemart.duckdns.org/upload/DECAKILA@2x.png',
                                       'http://superhomemart.duckdns.org/upload/JADEVER@2x.png',
                                       'http://superhomemart.duckdns.org/upload/TOTAL@2x.png',
-                                      'http://superhomemart.duckdns.org/upload/RICOTA_O.png'
+                                      'http://superhomemart.duckdns.org/upload/KANTO@2x.png'
                                     ][index % 4];
 
                                     return InkWell(
                                       onTap: () {
-                                        // นำทางไปยังหน้าที่เหมาะสมตาม URL ของภาพ
+                                        String query =
+                                            ''; // ตัวแปรสำหรับเก็บข้อความค้นหา
                                         switch (imageAsset) {
                                           case 'http://superhomemart.duckdns.org/upload/DECAKILA@2x.png':
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const DecakilaCategoryPage()),
-                                            );
+                                            query = 'DECAKILA';
                                             break;
                                           case 'http://superhomemart.duckdns.org/upload/JADEVER@2x.png':
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const JadeverCategoryPage()),
-                                            );
+                                            query = 'JADEVER';
                                             break;
                                           case 'http://superhomemart.duckdns.org/upload/TOTAL@2x.png':
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const TotalCategoryPage()),
-                                            );
+                                            query = 'TOTAL';
                                             break;
-                                          case 'http://superhomemart.duckdns.org/upload/RICOTA_O.png':
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const RicotaCategoryPage()),
-                                            );
+                                          case 'http://superhomemart.duckdns.org/upload/KANTO@2x.png':
+                                            query = 'KANTO';
                                             break;
                                           default:
                                             print(
                                                 'Unknown image asset: $imageAsset');
-                                            break;
+                                            return;
                                         }
+
+                                        // อัปเดตข้อความในช่องค้นหาและกรองสินค้า
+                                        setState(() {
+                                          searchQuery =
+                                              query; // อัปเดตข้อความในช่องค้นหา
+                                          _searchProducts(
+                                              query); // เรียกฟังก์ชันค้นหา
+                                          _isSearching = true; // เปิดโหมดค้นหา
+                                        });
                                       },
                                       child: SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.23,
+                                        width: MediaQuery.of(context)
+                                                .size
+                                                .width *
+                                            0.23, // ปรับขนาดตามความกว้างหน้าจอ
                                         child: Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
                                             Image.network(
                                               imageAsset,
-                                              height: 50,
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.05, // ปรับขนาดตามความสูงหน้าจอ
                                             ),
                                             const SizedBox(height: 5),
                                             Text(
@@ -493,18 +539,30 @@ class _Page1State extends State<Page1> {
                                 ),
                               ),
                               Container(
-                                height: _currentHeight,
                                 padding: const EdgeInsets.all(8.0),
                                 child: GridView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
                                   gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: MediaQuery.of(context)
+                                                .size
+                                                .width >
+                                            600
+                                        ? 3
+                                        : 2, // ปรับจำนวนคอลัมน์ตามความกว้างหน้าจอ
                                     crossAxisSpacing: 8.0,
                                     mainAxisSpacing: 8.0,
-                                    childAspectRatio: 0.7,
+                                    childAspectRatio:
+                                        MediaQuery.of(context).size.width > 600
+                                            ? 0.8
+                                            : 0.7, // ปรับสัดส่วนของ Grid
                                   ),
-                                  itemCount: displayedProducts.length,
+                                  itemCount: displayedProducts.length >
+                                          _itemsPerPage
+                                      ? _itemsPerPage
+                                      : displayedProducts
+                                          .length, // จำกัดจำนวนสินค้าที่แสดง
                                   itemBuilder: (context, index) {
                                     final product = displayedProducts[index];
                                     return InkWell(
@@ -513,33 +571,66 @@ class _Page1State extends State<Page1> {
                                             context, product);
                                       },
                                       child: Container(
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255),
                                         padding: const EdgeInsets.all(10.0),
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
-                                              child: Image.network(
-                                                "http://superhomemart.duckdns.org:80/upload/${product["photo"]}.jpg",
-                                                fit: BoxFit.cover,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                  topLeft: Radius.circular(8.0),
+                                                  topRight:
+                                                      Radius.circular(8.0),
+                                                ),
+                                                child: Image.network(
+                                                  "http://superhomemart.duckdns.org:80/upload/${product["photo"]}.jpg",
+                                                  fit: BoxFit.cover,
+                                                  width: double.infinity,
+                                                ),
                                               ),
                                             ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              product["name"],
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontFamily: 'Kanit'),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              '${product["price"]}฿',
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Kanit',
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(0.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      product["name"],
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontFamily: 'Kanit',
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Text(
+                                                      '${product["price"]} THB',
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontFamily: 'Kanit',
+                                                        color: Color.fromARGB(
+                                                            255, 223, 31, 31),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ],

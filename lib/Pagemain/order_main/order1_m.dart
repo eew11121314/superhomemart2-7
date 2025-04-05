@@ -3,9 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/_add_address_form.dart';
-//import 'package:superhomemart2/Pagemain/widgets_order1_m/address_box.dart';
 import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/payment_options.dart';
-//import 'package:superhomemart2/Pagemain/widgets_order1_m/discount_form.dart';
 import 'package:superhomemart2/Pagemain/order_main/widgets_order1_m/product_preview.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 import 'package:provider/provider.dart';
@@ -38,8 +36,9 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController =
       TextEditingController(); // เพิ่ม TextEditingController สำหรับ username
-  final TextEditingController _shippingCostController =
-      TextEditingController(); // เพิ่ม TextEditingController สำหรับค่าจัดส่ง
+  final TextEditingController _shippingCostController = TextEditingController(
+      text:
+          '0'); // เพิ่ม TextEditingController สำหรับค่าจัดส่งและตั้งค่าเริ่มต้นเป็น 0
   final TextEditingController _textAboutController =
       TextEditingController(); // เพิ่ม TextEditingController สำหรับข้อความเกี่ยวกับ
 
@@ -85,7 +84,10 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
       _phoneController.text = prefs.getString('phone') ?? '';
       _emailController.text = prefs.getString('email') ?? '';
       _shippingCostController.text =
-          prefs.getString('shippingCost') ?? ''; // โหลดค่าจัดส่งที่บันทึกไว้
+          (prefs.getString('shippingCost')?.isEmpty ?? true)
+              ? '0'
+              : prefs.getString(
+                  'shippingCost')!; // โหลดค่าจัดส่งที่บันทึกไว้ หรือ 0 ถ้าไม่มี
       _textAboutController.text = prefs.getString('textAbout') ??
           ''; // โหลดข้อความเกี่ยวกับที่บันทึกไว้
     });
@@ -108,6 +110,8 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     }
   }
 
+  // ...existing code...
+
   Future<void> _placeOrder() async {
     const String url = "https://superhomemart.duckdns.org/api/orders";
     const String apiKey =
@@ -121,6 +125,12 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
       };
     }).toList();
 
+    // คำนวณ total_amount
+    final totalAmount = cartProvider.cartItems.fold<double>(
+      0.00,
+      (sum, item) => sum + (item.price * item.quantity),
+    );
+
     final orderData = {
       'name': _fullNameController.text,
       'company': _companyController.text,
@@ -133,6 +143,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
       'shipping_cost': _shippingCostController.text, // เพิ่มค่าจัดส่งที่ดึงมา
       'text_about': _textAboutController.text, // เพิ่มข้อความเกี่ยวกับที่ดึงมา
       'cart': cartItems,
+      'total_amount': totalAmount.toString(), // เพิ่ม total_amount
       'website': 'appshm',
     };
 
@@ -150,7 +161,7 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      final orderId = data['order_id'];
+      final orderId = data['order_id'].toString(); // แปลง orderId เป็น String
 
       // ตรวจสอบ product_id ก่อนส่งข้อมูลไปยัง API order-items
       for (var item in cartItems) {
@@ -227,6 +238,8 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
             phone: _phoneController.text,
             email: _emailController.text,
             paymentMethod: _selectedPaymentMethod,
+            orderId: orderId, // ส่ง orderId ไปยัง OrderSummaryPage
+            totalAmount: totalAmount, // ส่ง totalAmount ไปยัง OrderSummaryPage
           ),
         ),
       );
@@ -296,6 +309,8 @@ class OrderPageMState extends State<OrderPageM> with WidgetsBindingObserver {
     await prefs.setString(
         'textAbout', _textAboutController.text); // บันทึกข้อความเกี่ยวกับ
   }
+
+  // ...existing code...
 
   void _changeAddress() {
     setState(() {

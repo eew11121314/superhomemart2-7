@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:superhomemart2/login&register/ForgetPassword.dart';
 import 'package:superhomemart2/login&register/register.dart';
-import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart'; // Update the import
-import 'package:flutter_svg/flutter_svg.dart'; // เพิ่มการนำเข้า
-import 'package:shared_preferences/shared_preferences.dart'; // นำเข้า SharedPreferences
+import 'package:superhomemart2/Pagemain/widgets_main/page1_bar_main.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:superhomemart2/Pagemain/order_main/cart/cart_provider_m.dart';
 
@@ -23,7 +22,7 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false; // สถานะการแสดงรหัสผ่าน
+  bool _isPasswordVisible = false; // ใช้สำหรับแสดง/ซ่อนรหัสผ่าน
   List<dynamic> users = []; // เก็บข้อมูลผู้ใช้จาก API
 
   // ฟังก์ชันดึงข้อมูลผู้ใช้จาก API
@@ -39,66 +38,86 @@ class LoginPageState extends State<LoginPage> {
         },
       );
 
+      debugPrint("Response status: ${response.statusCode}");
+      debugPrint("Response body: ${response.body}");
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        setState(() {
-          users = jsonData;
-        });
-        debugPrint("Success: $jsonData");
+        if (mounted) {
+          setState(() {
+            users = jsonData;
+          });
+        }
+        debugPrint("Users fetched: $jsonData");
       } else {
-        debugPrint("Error: ${response.statusCode}");
+        if (mounted) {
+          _showAlert(context,
+              "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ (Error: ${response.statusCode})");
+        }
       }
     } catch (e) {
       debugPrint("Exception: $e");
-    }
-  }
-
-  Future<void> logOut() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? username = prefs.getString('username');
-
-    if (username != null) {
-      // บันทึกข้อมูลตะกร้าสินค้าของผู้ใช้
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
-      await cartProvider.saveCart(username);
-      cartProvider.clearCart(); // ล้างข้อมูลตะกร้าสินค้า
-    }
-
-    await prefs.remove('username'); // ลบชื่อผู้ใช้
-    await prefs.remove('userData'); // ลบข้อมูลผู้ใช้
-    await prefs.setBool(
-        'isLoggedIn', false); // เปลี่ยนสถานะการเข้าสู่ระบบเป็น false
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-  }
-
-  Future<void> _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
-    if (isLoggedIn) {
-      String? userData = prefs.getString('userData');
-      if (userData != null) {
-        setState(() {
-          users = [json.decode(userData)];
-        });
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  const Custom_MBottomNavigationBar()), // ไปยังหน้า Page1BarMain
-        );
+      if (mounted) {
+        _showAlert(context, "เกิดข้อผิดพลาด: $e");
       }
-    } else {
-      fetchUsers(); // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลผู้ใช้เมื่อเปิดหน้า
     }
   }
 
-  // ฟังก์ชันแสดง alert message
+  // ฟังก์ชันเข้าสู่ระบบ
+  void _loginUser() async {
+    String username = _usernameController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      _showAlert(context, 'กรุณากรอกข้อมูลให้ครบ');
+      return;
+    }
+
+    debugPrint("Input username: $username");
+    debugPrint("Input password: $password");
+
+    bool userFound = false;
+    for (var user in users) {
+      debugPrint("Checking user: ${user['username']}");
+      if (user['username'] == username) {
+        debugPrint("Username matched: ${user['username']}");
+        if (BCrypt.checkpw(password, user['password'])) {
+          debugPrint("Password matched for user: $username");
+          userFound = true;
+
+          // บันทึกข้อมูลการเข้าสู่ระบบใน SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('username', username);
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userData', json.encode(user));
+
+          // โหลดข้อมูลตะกร้าสินค้าของผู้ใช้
+          final cartProvider =
+              Provider.of<CartProvider>(context, listen: false);
+          await cartProvider.loadCart(username);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Custom_MBottomNavigationBar(),
+            ),
+          );
+          return;
+        } else {
+          debugPrint("Password mismatch for user: $username");
+          _showAlert(context, 'รหัสผ่านไม่ถูกต้อง');
+          return;
+        }
+      }
+    }
+
+    if (!userFound) {
+      debugPrint("User not found: $username");
+      _showAlert(context, 'ไม่พบชื่อผู้ใช้นี้ในระบบ');
+    }
+  }
+
+  // ฟังก์ชันแสดงข้อความแจ้งเตือน
   void _showAlert(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -112,7 +131,7 @@ class LoginPageState extends State<LoginPage> {
                 color: Colors.red,
                 width: 50,
                 height: 50,
-              ), // ใช้ SVG แทนไอคอน
+              ),
               const SizedBox(height: 10),
               Text(
                 message,
@@ -137,50 +156,32 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
-  // ฟังก์ชันเปรียบเทียบข้อมูลผู้ใช้จาก API กับข้อมูลที่กรอก
-  void _loginUser() async {
-    String username = _usernameController.text;
-    String password = _passwordController.text;
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
 
-    if (username.isEmpty || password.isEmpty) {
-      _showAlert(context, 'กรุณากรอกข้อมูลให้ครบ');
-    } else {
-      bool userFound = false;
-      for (var user in users) {
-        if (user['username'] == username &&
-            BCrypt.checkpw(password, user['password'])) {
-          userFound = true;
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-          // บันทึกข้อมูลการเข้าสู่ระบบใน SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('username', username); // เก็บชื่อผู้ใช้
-          await prefs.setBool('isLoggedIn', true); // เก็บสถานะการเข้าสู่ระบบ
-          await prefs.setString(
-              'userData', json.encode(user)); // เก็บข้อมูลผู้ใช้
-
-          // โหลดข้อมูลตะกร้าสินค้าของผู้ใช้
-          final cartProvider =
-              Provider.of<CartProvider>(context, listen: false);
-          await cartProvider.loadCart(username);
-
-          // แสดงชื่อผู้ใช้และข้อมูลผู้ใช้บน terminal
-          debugPrint("Logged in as: $username");
-          debugPrint("User data: ${json.encode(user)}");
-
-          break;
+    if (isLoggedIn) {
+      String? userData = prefs.getString('userData');
+      if (userData != null) {
+        if (mounted) {
+          setState(() {
+            users = [json.decode(userData)];
+          });
         }
-      }
-
-      if (userFound) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  const Custom_MBottomNavigationBar()), // ไปยังหน้า Page1BarMain
+              builder: (context) => const Custom_MBottomNavigationBar()),
         );
-      } else {
-        _showAlert(context, 'ใส่ username หรือ password ไม่ถูกต้อง');
       }
+    } else {
+      fetchUsers();
     }
   }
 
@@ -203,26 +204,9 @@ class LoginPageState extends State<LoginPage> {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                  color:
-                      Colors.black.withAlpha(25)), // 0.1 * 255 = 25.5 ประมาณ 25
+              child: Container(color: Colors.black.withAlpha(25)),
             ),
           ),
-          // ปุ่มย้อนกลับ
-          if (widget.showBackButton)
-            Positioned(
-              top: 10,
-              left: 10,
-              child: IconButton(
-                icon: SvgPicture.asset(
-                  'assets/Icon/left.svg',
-                  color: Colors.white,
-                ), // ใช้ SVG แทนไอคอน
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
           // เนื้อหาหลัก
           Center(
             child: SingleChildScrollView(
@@ -250,21 +234,19 @@ class LoginPageState extends State<LoginPage> {
                           'assets/Icon/username.svg',
                           width: 24,
                           height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                        ),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       filled: true,
-                      fillColor: Colors.white.withAlpha(
-                          (0.8 * 255).toInt()), // เปลี่ยนจาก withOpacity
+                      fillColor: Colors.white.withAlpha((0.8 * 255).toInt()),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    obscureText:
-                        !_isPasswordVisible, // ใช้ค่า _isPasswordVisible
+                    obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
                       hintText: 'Type your password',
                       prefixIcon: Padding(
@@ -273,7 +255,7 @@ class LoginPageState extends State<LoginPage> {
                           'assets/Icon/lock.svg',
                           width: 24,
                           height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                        ),
                       ),
                       suffixIcon: IconButton(
                         icon: SvgPicture.asset(
@@ -283,11 +265,10 @@ class LoginPageState extends State<LoginPage> {
                           color: Colors.grey,
                           width: 24,
                           height: 24,
-                        ), // ใช้ SVG แทนไอคอน
+                        ),
                         onPressed: () {
                           setState(() {
-                            _isPasswordVisible =
-                                !_isPasswordVisible; // เปลี่ยนสถานะการแสดงรหัสผ่าน
+                            _isPasswordVisible = !_isPasswordVisible;
                           });
                         },
                       ),
@@ -295,26 +276,7 @@ class LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       filled: true,
-                      fillColor: Colors.white.withAlpha(
-                          (0.8 * 255).toInt()), // เปลี่ยนจาก withOpacity
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgetPasswordPage(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'ลืมรหัสผ่าน?',
-                        style:
-                            TextStyle(color: Colors.white, fontFamily: 'Kanit'),
-                      ),
+                      fillColor: Colors.white.withAlpha((0.8 * 255).toInt()),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -328,7 +290,7 @@ class LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: ElevatedButton(
-                        onPressed: _loginUser, // เรียกใช้ฟังก์ชันการเข้าสู่ระบบ
+                        onPressed: _loginUser,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -349,44 +311,6 @@ class LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Sign Up Using',
-                    style: TextStyle(color: Colors.white, fontFamily: 'Kanit'),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // IconButton(
-                      //   icon: SvgPicture.asset(
-                      //     'assets/Icon/facebook.svg',
-                      //     width: 30,
-                      //     height: 30,
-                      //     color: const Color.fromARGB(180, 255, 255, 255),
-                      //   ), // ใช้ SVG แทนไอคอน
-                      //   onPressed: () {},
-                      // ),
-                      //   IconButton(
-                      //     icon: SvgPicture.asset(
-                      //       'assets/Icon/gmail.svg',
-                      //       width: 30,
-                      //       height: 30,
-                      //       color: const Color.fromARGB(180, 255, 255, 255),
-                      //     ), // ใช้ SVG แทนไอคอน
-                      //     onPressed: () {},
-                      //   ),
-                      //   IconButton(
-                      //     icon: SvgPicture.asset(
-                      //       'assets/Icon/phone.svg',
-                      //       width: 30,
-                      //       height: 30,
-                      //       color: const Color.fromARGB(180, 255, 255, 255),
-                      //     ), // ใช้ SVG แทนไอคอน
-                      //     onPressed: () {},
-                      //   ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -401,8 +325,8 @@ class LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         color: Color(0xFFCFEE80),
                         fontFamily: 'Kanit',
-                        fontSize: 20, // เพิ่มขนาดฟอนต์
-                        fontWeight: FontWeight.bold, // ทำให้ตัวหนังสือหนาขึ้น
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
